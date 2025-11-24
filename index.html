@@ -3770,7 +3770,10 @@
                         .eq('follower_id', currentUser.id)
                         .eq('followed_id', currentViewingUserId);
 
-                    if (error) throw error;
+                    if (error) {
+                        console.error('Unfollow error details:', error);
+                        throw error;
+                    }
 
                     // Update local state
                     follows[currentUser.id] = follows[currentUser.id].filter(id => id !== currentViewingUserId);
@@ -3786,7 +3789,10 @@
                             followed_id: currentViewingUserId
                         }]);
 
-                    if (error) throw error;
+                    if (error) {
+                        console.error('Follow error details:', error);
+                        throw error;
+                    }
 
                     // Update local state
                     if (!follows[currentUser.id]) follows[currentUser.id] = [];
@@ -3800,7 +3806,15 @@
                 await updateFollowersCount(currentViewingUserId);
             } catch (error) {
                 console.error('Error toggling follow:', error);
-                alert('Failed to update follow status. Please try again.');
+                console.error('Error message:', error.message);
+                console.error('Error details:', JSON.stringify(error, null, 2));
+                
+                // Check if it's a table not found error
+                if (error.message && error.message.includes('relation "public.follows" does not exist')) {
+                    alert('The follows feature is not yet configured in the database. Please run the SQL script: create_follows_table.sql');
+                } else {
+                    alert('Failed to update follow status: ' + (error.message || 'Unknown error'));
+                }
             }
         }
 
@@ -3810,20 +3824,31 @@
                     .from('follows')
                     .select('*');
 
-                if (error) throw error;
+                if (error) {
+                    // If table doesn't exist, just initialize empty follows
+                    if (error.message && error.message.includes('does not exist')) {
+                        console.warn('Follows table not found. Run create_follows_table.sql to enable followers feature.');
+                        follows = {};
+                        return;
+                    }
+                    throw error;
+                }
 
                 // Build follows map
                 follows = {};
-                data.forEach(follow => {
-                    if (!follows[follow.follower_id]) {
-                        follows[follow.follower_id] = [];
-                    }
-                    follows[follow.follower_id].push(follow.followed_id);
-                });
+                if (data) {
+                    data.forEach(follow => {
+                        if (!follows[follow.follower_id]) {
+                            follows[follow.follower_id] = [];
+                        }
+                        follows[follow.follower_id].push(follow.followed_id);
+                    });
+                }
 
                 console.log('Loaded follows:', follows);
             } catch (error) {
                 console.error('Error loading follows:', error);
+                follows = {};
             }
         }
 
