@@ -3658,6 +3658,7 @@
         
         // View User Profile
         async function viewUserProfile(userId, userName) {
+            console.log('viewUserProfile called:', userId, userName, 'currentUser:', currentUser);
             if (!userId) return;
             
             // Filter routes by user
@@ -3752,14 +3753,19 @@
             const followText = document.getElementById('followText');
             const followIcon = document.getElementById('followIcon');
             
+            console.log('Setting button visibility. Own profile?', currentUser && userId === currentUser.id);
+            console.log('Logged in?', !!currentUser);
+            
             if (currentUser && userId === currentUser.id) {
                 // Viewing own profile
+                console.log('Showing own profile buttons');
                 document.getElementById('clearAllBtn').style.display = 'inline-flex';
                 document.getElementById('logoutBtn').style.display = 'inline-flex';
                 document.getElementById('loginBtn').style.display = 'none';
                 followBtn.style.display = 'none';
             } else if (currentUser) {
                 // Viewing another user's profile while logged in
+                console.log('Showing follow button (logged in, viewing other user)');
                 document.getElementById('clearAllBtn').style.display = 'none';
                 document.getElementById('logoutBtn').style.display = 'none';
                 document.getElementById('loginBtn').style.display = 'none';
@@ -3778,6 +3784,7 @@
                 }
             } else {
                 // Not logged in - show follow button that will prompt login
+                console.log('Showing follow button (not logged in)');
                 document.getElementById('clearAllBtn').style.display = 'none';
                 document.getElementById('logoutBtn').style.display = 'none';
                 document.getElementById('loginBtn').style.display = 'none';
