@@ -1715,8 +1715,19 @@
                     // Reload routes
                     await loadRoutesFromSupabase();
                     await loadLikesAndComments();
+                    await loadFollows();
                     loadFeed();
                     updateProfileStats();
+                    
+                    // Check if user was trying to follow someone before login
+                    const pendingFollowUserId = localStorage.getItem('pendingFollowUserId');
+                    const pendingFollowUserName = localStorage.getItem('pendingFollowUserName');
+                    if (pendingFollowUserId && pendingFollowUserName) {
+                        localStorage.removeItem('pendingFollowUserId');
+                        localStorage.removeItem('pendingFollowUserName');
+                        // Return to that user's profile
+                        await viewUserProfile(pendingFollowUserId, pendingFollowUserName);
+                    }
                 }
             });
             
@@ -3762,6 +3773,12 @@
         // Follow/Unfollow System
         async function toggleFollow() {
             if (!currentUser) {
+                // Save the user we want to follow for after login
+                if (currentViewingUserId) {
+                    localStorage.setItem('pendingFollowUserId', currentViewingUserId);
+                    const userName = document.getElementById('userName').textContent;
+                    localStorage.setItem('pendingFollowUserName', userName);
+                }
                 showAuthModal();
                 return;
             }
