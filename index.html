@@ -1646,7 +1646,7 @@
         let pendingRoute = null;
         let routeLikes = {}; // { routeId: [userId1, userId2, ...] }
         let routeComments = {}; // { routeId: [{user, text, date}, ...] }
-        let follows = {}; // { follower_id: [followed_ids...] }
+        let follows = {}; // { follower_id: [following_ids...] }
         let currentViewingUserId = null; // Track which user profile is being viewed
 
         // Initialize
@@ -3854,7 +3854,7 @@
                         .from('follows')
                         .delete()
                         .eq('follower_id', currentUser.id)
-                        .eq('followed_id', currentViewingUserId);
+                        .eq('following_id', currentViewingUserId);
 
                     if (error) {
                         console.error('Unfollow error details:', error);
@@ -3873,7 +3873,7 @@
                         .from('follows')
                         .insert([{
                             follower_id: currentUser.id,
-                            followed_id: currentViewingUserId
+                            following_id: currentViewingUserId
                         }]);
 
                     if (error) {
@@ -3928,7 +3928,7 @@
                         .from('follows')
                         .delete()
                         .eq('follower_id', currentUser.id)
-                        .eq('followed_id', userId);
+                        .eq('following_id', userId);
 
                     if (error) throw error;
 
@@ -3940,7 +3940,7 @@
                         .from('follows')
                         .insert([{
                             follower_id: currentUser.id,
-                            followed_id: userId
+                            following_id: userId
                         }]);
 
                     if (error) throw error;
@@ -3985,7 +3985,7 @@
                         if (!follows[follow.follower_id]) {
                             follows[follow.follower_id] = [];
                         }
-                        follows[follow.follower_id].push(follow.followed_id);
+                        follows[follow.follower_id].push(follow.following_id);
                     });
                 }
 
