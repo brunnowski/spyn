@@ -2421,6 +2421,15 @@
                 const createdBy = route.user_name || 'Anonymous';
                 const userId = route.user_id || null;
                 
+                if (index === 0) {
+                    console.log('First route:', {
+                        name: route.name,
+                        user_id: route.user_id,
+                        user_name: route.user_name,
+                        hasUserId: !!userId
+                    });
+                }
+                
                 // Get likes and comments for this route
                 const likes = routeLikes[route.id] || [];
                 const comments = routeComments[route.id] || [];
