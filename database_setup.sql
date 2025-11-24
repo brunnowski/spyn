@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS route_comments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   route_id TEXT REFERENCES routes(id) ON DELETE CASCADE,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_name TEXT NOT NULL,
   comment TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
