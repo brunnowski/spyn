@@ -2918,8 +2918,14 @@
                     
                     // Load public routes for feed
                     await loadRoutesFromSupabase();
-                    loadFeed();
-                    updateProfileStats();
+                    
+                    // Update UI
+                    try {
+                        loadFeed();
+                        updateProfileStats();
+                    } catch (uiError) {
+                        console.error('UI update error:', uiError);
+                    }
                     
                     // Navigate to feed
                     showPage('feed', document.querySelectorAll('.nav-btn')[0]);
@@ -2927,7 +2933,13 @@
                     alert('Logged out successfully');
                 } catch (error) {
                     console.error('Logout error:', error);
-                    alert('Logout failed: ' + error.message);
+                    // Even if there's an error, clear the UI
+                    currentUser = null;
+                    document.getElementById('logoutBtn').style.display = 'none';
+                    document.getElementById('clearAllBtn').style.display = 'none';
+                    document.getElementById('loginBtn').style.display = 'inline-flex';
+                    showPage('feed', document.querySelectorAll('.nav-btn')[0]);
+                    alert('Logged out (with errors): ' + error.message);
                 }
             }
         }
