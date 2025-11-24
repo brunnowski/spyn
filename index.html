@@ -1,0 +1,2608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPYN - Photo Journey Routes</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        /* Brutalist Design System */
+        :root {
+            --brutal-black: #000000;
+            --brutal-white: #FFFFFF;
+            --brutal-yellow: #FFFF00;
+            --brutal-red: #FF0000;
+            --brutal-blue: #0000FF;
+            --brutal-border: 4px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--brutal-white);
+            color: var(--brutal-black);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Mobile-first typography */
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+        }
+
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 900;
+            line-height: 1.2;
+            text-transform: uppercase;
+        }
+
+        @media (min-width: 768px) {
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        h3 {
+            font-size: 1rem;
+            font-weight: 800;
+            line-height: 1.3;
+            text-transform: uppercase;
+        }
+
+        @media (min-width: 768px) {
+            h3 {
+                font-size: 1.125rem;
+            }
+        }
+
+        p {
+            font-size: 0.875rem;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        @media (min-width: 768px) {
+            p {
+                font-size: 0.9375rem;
+            }
+        }
+
+        /* Brutalist Utility Classes */
+        .brutal-border {
+            border: var(--brutal-border) solid var(--brutal-black);
+        }
+
+        .brutal-shadow {
+            box-shadow: 8px 8px 0 var(--brutal-black);
+        }
+
+        .brutal-shadow-sm {
+            box-shadow: 4px 4px 0 var(--brutal-black);
+        }
+
+        .brutal-button {
+            border: var(--brutal-border) solid var(--brutal-black);
+            font-weight: 900;
+            text-transform: uppercase;
+            transition: all 0.1s ease;
+            cursor: pointer;
+            background: var(--brutal-white);
+        }
+
+        .brutal-button:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--brutal-black);
+        }
+
+        .brutal-button:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--brutal-black);
+        }
+
+        /* Navigation */
+        .nav {
+            background: var(--brutal-yellow);
+            border-bottom: var(--brutal-border) solid var(--brutal-black);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: none;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 10px;
+            position: relative;
+        }
+
+        .nav-btn {
+            background: var(--brutal-white);
+            border: var(--brutal-border) solid var(--brutal-black);
+            font-size: 0.875rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            padding: 10px 12px;
+            transition: all 0.1s ease;
+            box-shadow: 4px 4px 0 var(--brutal-black);
+        }
+
+        @media (min-width: 768px) {
+            .nav-content {
+                padding: 15px;
+            }
+            .nav-btn {
+                font-size: 1.25rem;
+                padding: 12px 20px;
+            }
+        }
+
+        /* Route Info Section */
+        .route-info {
+            background: var(--brutal-white);
+            border: var(--brutal-border) solid var(--brutal-black);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 6px 6px 0 var(--brutal-black);
+            display: none;
+        }
+
+        .route-info.visible {
+            display: block;
+        }
+
+        .route-info-field {
+            margin-bottom: 15px;
+        }
+
+        .route-info-field:last-child {
+            margin-bottom: 0;
+        }
+
+        .route-info-field label {
+            display: block;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            margin-bottom: 8px;
+            letter-spacing: 0.05em;
+        }
+
+        .route-info-field input,
+        .route-info-field textarea {
+            width: 100%;
+            padding: 12px;
+            border: var(--brutal-border) solid var(--brutal-black);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            font-family: inherit;
+            background: var(--brutal-white);
+            transition: all 0.1s ease;
+        }
+
+        .route-info-field input:focus,
+        .route-info-field textarea:focus {
+            outline: none;
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0 var(--brutal-black);
+        }
+
+        .route-info-field input:read-only,
+        .route-info-field textarea:read-only {
+            background: #f5f5f5;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .route-info-field input:read-only:focus,
+        .route-info-field textarea:read-only:focus {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .route-info-field textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .route-info-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .edit-route-btn {
+            background: var(--brutal-blue);
+            color: var(--brutal-white);
+            border: var(--brutal-border) solid var(--brutal-black);
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 4px 4px 0 var(--brutal-black);
+            transition: all 0.1s ease;
+            flex: 1;
+        }
+
+        .edit-route-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--brutal-black);
+        }
+
+        .edit-route-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--brutal-black);
+        }
+
+        @media (min-width: 768px) {
+            .route-info {
+                padding: 25px;
+            }
+        }
+
+        /* Map container with overlay button */
+        .map-container {
+            position: relative;
+        }
+
+        .map-upload-overlay {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--brutal-blue);
+            color: var(--brutal-white);
+            border: var(--brutal-border) solid var(--brutal-black);
+            width: 60px;
+            height: 60px;
+            font-size: 28px;
+            font-weight: 900;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 6px 6px 0 var(--brutal-black);
+            transition: all 0.1s ease;
+        }
+
+        .map-upload-overlay.visible {
+            display: flex;
+        }
+
+        .map-upload-overlay:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0 var(--brutal-black);
+        }
+
+        .map-upload-overlay:active {
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0 var(--brutal-black);
+        }
+
+        @media (min-width: 768px) {
+            .map-upload-overlay {
+                width: 70px;
+                height: 70px;
+                font-size: 32px;
+            }
+        }
+
+        .nav-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--brutal-black);
+        }
+
+        .nav-btn.active {
+            background: var(--brutal-black);
+            color: var(--brutal-white);
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--brutal-black);
+        }
+
+        /* Pages */
+        .page {
+            display: none;
+            padding-top: 70px;
+            min-height: 100vh;
+            padding-bottom: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .page {
+                padding-top: 90px;
+                padding-bottom: 40px;
+            }
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+        }
+
+        /* Welcome/Upload Section - CTA Landing */
+        .welcome-section {
+            background: var(--brutal-white);
+            border: var(--brutal-border) solid var(--brutal-black);
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 8px 8px 0 var(--brutal-black);
+            margin-bottom: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .welcome-section {
+                padding: 40px;
+                margin-bottom: 30px;
+            }
+        }
+
+        .welcome-section.cta-landing {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 0;
+            padding: 40px 20px;
+        }
+
+        .welcome-section.cta-landing h1 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .welcome-section.cta-landing h1 {
+                font-size: 4rem;
+            }
+        }
+
+        .welcome-section.cta-landing p {
+            font-size: 1.125rem;
+            margin-bottom: 40px;
+            text-align: center;
+            max-width: 500px;
+        }
+
+        @media (min-width: 768px) {
+            .welcome-section.cta-landing p {
+                font-size: 1.5rem;
+            }
+        }
+
+        .upload-btn {
+            background: var(--brutal-blue);
+            color: var(--brutal-white);
+            border: var(--brutal-border) solid var(--brutal-black);
+            padding: 18px 40px;
+            font-size: 18px;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 6px 6px 0 var(--brutal-black);
+            transition: all 0.1s ease;
+        }
+
+        @media (min-width: 768px) {
+            .upload-btn {
+                padding: 20px 50px;
+                font-size: 20px;
+                box-shadow: 8px 8px 0 var(--brutal-black);
+            }
+        }
+
+        .upload-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--brutal-black);
+        }
+
+        .upload-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--brutal-black);
+        }
+
+        #photoInput {
+            display: none;
+        }
+
+        .photo-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .photo-preview {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 15px;
+                margin-top: 30px;
+            }
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border: var(--brutal-border) solid var(--brutal-black);
+            box-shadow: 4px 4px 0 var(--brutal-black);
+        }
+
+        @media (min-width: 768px) {
+            .photo-preview img {
+                height: 150px;
+            }
+        }
+
+        .process-btn {
+            background: var(--brutal-yellow);
+            color: var(--brutal-black);
+            border: var(--brutal-border) solid var(--brutal-black);
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 4px 4px 0 var(--brutal-black);
+            transition: all 0.1s ease;
+        }
+
+        .process-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--brutal-black);
+        }
+
+        .process-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--brutal-black);
+        }
+
+        .process-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        /* Map */
+        #map {
+            height: 400px;
+            border: var(--brutal-border) solid var(--brutal-black);
+            box-shadow: 6px 6px 0 var(--brutal-black);
+        }
+
+        @media (min-width: 768px) {
+            #map {
+                height: 500px;
+                box-shadow: 8px 8px 0 var(--brutal-black);
+            }
+        }
+
+        /* Feed */
+        .route-card {
+            background: var(--brutal-white);
+            border: var(--brutal-border) solid var(--brutal-black);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 6px 6px 0 var(--brutal-black);
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+
+        @media (min-width: 768px) {
+            .route-card {
+                padding: 25px;
+                margin-bottom: 25px;
+                box-shadow: 8px 8px 0 var(--brutal-black);
+            }
+        }
+
+        .route-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 10px 10px 0 var(--brutal-black);
+        }
+
+        .route-card h3 {
+            margin-bottom: 15px;
+            color: var(--brutal-black);
+        }
+
+        .route-card p {
+            color: var(--brutal-black);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .route-card .route-preview {
+            height: 200px;
+            background: #f0f0f0;
+            margin-top: 15px;
+        }
+
+        .mini-map {
+            height: 300px;
+            margin-top: 15px;
+            border: var(--brutal-border) solid var(--brutal-black);
+            box-shadow: 4px 4px 0 var(--brutal-black);
+            background: #f0f0f0;
+        }
+
+        @media (min-width: 768px) {
+            .mini-map {
+                height: 350px;
+                box-shadow: 6px 6px 0 var(--brutal-black);
+            }
+        }
+
+        .share-btn {
+            background: var(--brutal-red);
+            color: var(--brutal-white);
+            border: var(--brutal-border) solid var(--brutal-black);
+            padding: 10px 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 15px;
+            box-shadow: 4px 4px 0 var(--brutal-black);
+            transition: all 0.1s ease;
+        }
+
+        .share-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--brutal-black);
+        }
+
+        .share-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--brutal-black);
+        }
+
+        /* Profile */
+        .profile-header {
+            background: var(--brutal-yellow);
+            border: var(--brutal-border) solid var(--brutal-black);
+            padding: 40px;
+            text-align: center;
+            box-shadow: 8px 8px 0 var(--brutal-black);
+            margin-bottom: 30px;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            background: var(--brutal-black);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--brutal-white);
+            font-size: 50px;
+            font-weight: 900;
+            border: var(--brutal-border) solid var(--brutal-black);
+            box-shadow: 6px 6px 0 var(--brutal-black);
+        }
+
+        .route-list {
+            background: var(--brutal-white);
+            border: var(--brutal-border) solid var(--brutal-black);
+            padding: 25px;
+            box-shadow: 8px 8px 0 var(--brutal-black);
+        }
+
+        .route-item {
+            padding: 20px;
+            border: 3px solid var(--brutal-black);
+            cursor: pointer;
+            transition: all 0.1s ease;
+            margin-bottom: 15px;
+            background: var(--brutal-white);
+        }
+
+        .route-item:hover {
+            background: var(--brutal-yellow);
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0 var(--brutal-black);
+        }
+
+        .route-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .route-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .route-item-title {
+            flex: 1;
+        }
+
+        .route-item-share {
+            background: var(--brutal-red);
+            color: var(--brutal-white);
+            border: var(--brutal-border) solid var(--brutal-black);
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 var(--brutal-black);
+            transition: all 0.1s ease;
+            margin-left: 10px;
+        }
+
+        .route-item-share:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0 var(--brutal-black);
+        }
+
+        .route-item-share:active {
+            transform: translate(1px, 1px);
+            box-shadow: 2px 2px 0 var(--brutal-black);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--brutal-white);
+            padding: 40px;
+            border: var(--brutal-border) solid var(--brutal-black);
+            box-shadow: 12px 12px 0 var(--brutal-black);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 20px;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            border: var(--brutal-border) solid var(--brutal-black);
+            margin: 15px 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .close-modal {
+            background: var(--brutal-black);
+            color: var(--brutal-white);
+            border: var(--brutal-border) solid var(--brutal-black);
+            padding: 12px 24px;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 15px;
+            box-shadow: 4px 4px 0 var(--brutal-black);
+            transition: all 0.1s ease;
+        }
+
+        .close-modal:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--brutal-black);
+        }
+
+        /* Auth Modal */
+        .auth-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+
+
+
+        .auth-tab {
+            flex: 1;
+            background: var(--brutal-white);
+            border: var(--brutal-border) solid var(--brutal-black);
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 4px 4px 0 var(--brutal-black);
+            transition: all 0.1s ease;
+        }
+
+        .auth-tab:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--brutal-black);
+        }
+
+        .auth-tab.active {
+            background: var(--brutal-yellow);
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--brutal-black);
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .auth-form input {
+            width: 100%;
+            padding: 12px;
+            border: var(--brutal-border) solid var(--brutal-black);
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+        }
+
+        .auth-form input:focus {
+            outline: none;
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0 var(--brutal-black);
+        }
+
+        .auth-submit {
+            width: 100%;
+            background: var(--brutal-blue);
+            color: var(--brutal-white);
+            border: var(--brutal-border) solid var(--brutal-black);
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 4px 4px 0 var(--brutal-black);
+            transition: all 0.1s ease;
+        }
+
+        .auth-submit:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--brutal-black);
+        }
+
+        .auth-submit:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--brutal-black);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--brutal-black);
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        /* Photo Viewer Modal */
+        .photo-viewer {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--brutal-black);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 20px 120px 20px;
+        }
+
+        @media (max-width: 768px) {
+            .photo-viewer {
+                padding: 80px 20px 140px 20px;
+            }
+        }
+
+        .photo-viewer.active {
+            display: flex;
+        }
+
+        .photo-viewer-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .photo-viewer img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border: var(--brutal-border) solid var(--brutal-white);
+        }
+
+        .photo-viewer-bottom {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .photo-close {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: var(--brutal-red);
+            border: var(--brutal-border) solid var(--brutal-white);
+            width: 50px;
+            height: 50px;
+            font-size: 28px;
+            font-weight: 900;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--brutal-white);
+            box-shadow: 4px 4px 0 var(--brutal-white);
+            transition: all 0.1s ease;
+        }
+
+        .photo-close:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--brutal-white);
+        }
+
+        .photo-info {
+            background: var(--brutal-yellow);
+            border: var(--brutal-border) solid var(--brutal-white);
+            padding: 12px 24px;
+            color: var(--brutal-black);
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 14px;
+            box-shadow: 4px 4px 0 var(--brutal-white);
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            .photo-info {
+                font-size: 12px;
+                padding: 10px 20px;
+            }
+        }
+
+        .photo-thumbnail {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border: var(--brutal-border) solid var(--brutal-black);
+            box-shadow: 4px 4px 0 var(--brutal-black);
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+
+        .photo-thumbnail:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--brutal-black);
+        }
+
+        /* Clear All Button */
+        .clear-all-btn {
+            background: var(--brutal-red);
+            color: var(--brutal-white);
+            border: var(--brutal-border) solid var(--brutal-black);
+            padding: 10px 20px;
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 4px 4px 0 var(--brutal-black);
+            transition: all 0.1s ease;
+        }
+
+        .clear-all-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--brutal-black);
+        }
+
+        /* Photo Carousel */
+        .photo-carousel {
+            background: var(--brutal-white);
+            border: var(--brutal-border) solid var(--brutal-black);
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 6px 6px 0 var(--brutal-black);
+            display: none;
+        }
+
+        .photo-carousel.visible {
+            display: block;
+        }
+
+        .photo-carousel h3 {
+            margin-bottom: 15px;
+        }
+
+        .carousel-container {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 0;
+            scroll-behavior: smooth;
+        }
+
+        .carousel-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .carousel-container::-webkit-scrollbar-track {
+            background: #f0f0f0;
+            border: 2px solid var(--brutal-black);
+        }
+
+        .carousel-container::-webkit-scrollbar-thumb {
+            background: var(--brutal-yellow);
+            border: 2px solid var(--brutal-black);
+        }
+
+        .carousel-item {
+            flex: 0 0 auto;
+            width: 150px;
+            height: 150px;
+            border: var(--brutal-border) solid var(--brutal-black);
+            box-shadow: 4px 4px 0 var(--brutal-black);
+            cursor: pointer;
+            transition: all 0.1s ease;
+            position: relative;
+        }
+
+        .carousel-item:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--brutal-black);
+        }
+
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .carousel-item-number {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: var(--brutal-yellow);
+            border: 2px solid var(--brutal-black);
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: 900;
+            box-shadow: 2px 2px 0 var(--brutal-black);
+        }
+
+        @media (min-width: 768px) {
+            .photo-carousel {
+                padding: 25px;
+            }
+            .carousel-item {
+                width: 180px;
+                height: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav" id="mainNav">
+        <div class="nav-content">
+            <button class="nav-btn" onclick="showPage('feed', this)">FEED</button>
+            <button class="nav-btn" onclick="showPage('map', this)">MAP</button>
+            <button class="nav-btn" onclick="showPage('profile', this)">PROFILE</button>
+        </div>
+    </nav>
+
+    <!-- Start/CTA Landing Page -->
+    <div id="startPage" class="page active" style="padding-top: 0;">
+        <div class="welcome-section cta-landing">
+            <h1>SPYN Your Journey</h1>
+            <p>Upload photos with GPS data to generate your route</p>
+            <button class="upload-btn" onclick="document.getElementById('photoInput').click()">
+                Upload Photos
+            </button>
+            <input type="file" id="photoInput" multiple accept="image/*">
+        </div>
+    </div>
+
+    <!-- Feed Page -->
+    <div id="feedPage" class="page">
+        <div class="container">
+            <h1 style="margin-bottom: 20px;">Route Feed</h1>
+            <div id="feedContent"></div>
+        </div>
+    </div>
+
+    <!-- Map Page -->
+    <div id="mapPage" class="page">
+        <div class="container">
+            <div id="routeInfoTop" class="route-info">
+                <div class="route-info-field">
+                    <label for="routeName">Route Name</label>
+                    <input type="text" id="routeName" placeholder="Enter route name..." required>
+                </div>
+                <div class="route-info-field">
+                    <label for="routeDescription">Description</label>
+                    <textarea id="routeDescription" placeholder="Add a description for your journey..."></textarea>
+                </div>
+            </div>
+            <div id="photoPreview" class="photo-preview" style="margin-bottom: 20px;"></div>
+            <button id="processBtn" class="process-btn" style="display: none; width: 100%;" onclick="processPhotos()">
+                Generate Route
+            </button>
+            <div class="map-container">
+                <div id="map" style="margin-top: 20px;"></div>
+                <button id="mapUploadBtn" class="map-upload-overlay" onclick="document.getElementById('photoInput').click()" title="Upload More Photos">+</button>
+            </div>
+            <div id="photoCarousel" class="photo-carousel">
+                <h3>Route Photos</h3>
+                <div id="carouselContainer" class="carousel-container"></div>
+            </div>
+            <div id="routeInfoBottom" class="route-info" style="display: none;">
+                <h3 style="margin-bottom: 15px;" id="routeNameDisplay"></h3>
+                <p style="font-weight: 500; line-height: 1.6; margin-bottom: 15px;" id="routeDescriptionDisplay"></p>
+                <div id="routeInfoActions" class="route-info-actions">
+                    <button class="edit-route-btn" onclick="toggleEditRoute()">Edit</button>
+                    <button class="share-btn" onclick="shareCurrentRoute()" style="flex: 1; margin: 0;">Share</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Page -->
+    <div id="profilePage" class="page">
+        <div class="container">
+            <div class="profile-header">
+                <div id="profileAvatar" class="profile-avatar">U</div>
+                <h2 id="userName">Traveler</h2>
+                <p id="routeCount" style="font-weight: 800; text-transform: uppercase; margin-top: 10px;">0 routes created</p>
+                <button onclick="logout()" class="clear-all-btn" style="margin-top: 15px; display: none;" id="logoutBtn">Logout</button>
+                <button onclick="showAuthModal()" class="upload-btn" style="margin-top: 15px; display: none; background: var(--brutal-blue);" id="loginBtn">Login / Sign Up</button>
+            </div>
+            <div class="route-list" id="routeListSection">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3>My Routes</h3>
+                    <button onclick="clearAllRoutes()" class="clear-all-btn" id="clearAllBtn">Clear All</button>
+                </div>
+                <div id="profileRoutes"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="shareModal" class="modal">
+        <div class="modal-content">
+            <h3>Share Route</h3>
+            <input type="text" id="shareLink" readonly>
+            <button class="upload-btn" onclick="copyShareLink()">Copy Link</button>
+            <button class="close-modal" onclick="closeShareModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <h3>Create Account or Login</h3>
+            <p style="margin-bottom: 20px; font-size: 14px; font-weight: 600;">Please create an account or login to save your route</p>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+                <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="loginForm" class="auth-form active">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button class="auth-submit" onclick="handleLogin()">Login</button>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="signupForm" class="auth-form">
+                <input type="text" id="signupName" placeholder="Your Name" required>
+                <input type="email" id="signupEmail" placeholder="Email" required>
+                <input type="password" id="signupPassword" placeholder="Password" required>
+                <input type="password" id="signupPasswordConfirm" placeholder="Confirm Password" required>
+                <button class="auth-submit" onclick="handleSignup()">Create Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Verification Modal -->
+    <div id="emailVerificationModal" class="modal">
+        <div class="modal-content">
+            <h3>Verify Your Email</h3>
+            <p style="margin-bottom: 20px; font-size: 14px; font-weight: 600; line-height: 1.6;">
+                We sent a verification link to your email address.<br>
+                Please check your inbox and click the link to verify your account.
+            </p>
+            <p style="margin-bottom: 20px; font-size: 13px; font-weight: 600; color: #666;">
+                After verifying, return here and your route will be saved automatically.
+            </p>
+            <button class="upload-btn" onclick="openEmailApp()" style="width: 100%; margin-bottom: 10px;">Open Email App</button>
+            <button class="close-modal" onclick="closeEmailVerificationModal()">I'll verify later</button>
+        </div>
+    </div>
+
+    <!-- Photo Viewer Modal -->
+    <div id="photoViewer" class="photo-viewer">
+        <div class="photo-viewer-content">
+            <img id="viewerImage" src="" alt="Photo">
+            <button class="photo-close" onclick="closePhotoViewer()">×</button>
+        </div>
+        <div class="photo-viewer-bottom">
+            <div class="photo-info" id="photoInfo"></div>
+        </div>
+    </div>
+
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- EXIF JS -->
+    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://uplwtrpfcmangoohpglz.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwbHd0cnBmY21hbmdvb2hwZ2x6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MzkyOTksImV4cCI6MjA3OTUxNTI5OX0.VEaQN_eMeLoIyuwdB0bitVd4-gwWR4vgtUyfiJW9VwE';
+        
+        // Initialize Supabase client
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // App State
+        let routes = [];
+        let currentPhotos = [];
+        let map = null;
+        let currentRoute = null;
+        let currentUser = null;
+        let pendingRoute = null;
+
+        // Initialize
+        // Close modals when clicking outside
+        window.addEventListener('click', function(event) {
+            const shareModal = document.getElementById('shareModal');
+            const authModal = document.getElementById('authModal');
+            const emailVerificationModal = document.getElementById('emailVerificationModal');
+            
+            if (event.target === shareModal) {
+                closeShareModal();
+            }
+            if (event.target === authModal) {
+                closeAuthModal();
+            }
+            if (event.target === emailVerificationModal) {
+                closeEmailVerificationModal();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            initMap();
+            
+            // Check if this is the first visit
+            const hasVisited = localStorage.getItem('hasVisited');
+            if (hasVisited) {
+                // Not first visit - go to Feed page and show navigation
+                document.getElementById('mainNav').style.display = 'block';
+                showPage('feed', document.querySelectorAll('.nav-btn')[0]);
+            } else {
+                // First visit - hide navigation until photos are uploaded
+                document.getElementById('mainNav').style.display = 'none';
+                // Mark as visited will be done after first upload
+            }
+            
+            // Check for existing Supabase session
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session && session.user.email_confirmed_at) {
+                currentUser = {
+                    id: session.user.id,
+                    email: session.user.email,
+                    name: session.user.user_metadata.name || session.user.email
+                };
+                updateProfileWithUser();
+                
+                // If there's a pending route and user just verified, save it
+                if (pendingRoute) {
+                    document.getElementById('emailVerificationModal').classList.remove('active');
+                    await savePendingRoute();
+                }
+            } else {
+                // Não há sessão - mostrar botão de login
+                updateProfileWithUser();
+            }
+            
+            // Listen for auth state changes (email verification)
+            supabase.auth.onAuthStateChange(async (event, session) => {
+                console.log('Auth state changed:', event);
+                
+                if (event === 'SIGNED_IN' && session && session.user.email_confirmed_at) {
+                    currentUser = {
+                        id: session.user.id,
+                        email: session.user.email,
+                        name: session.user.user_metadata.name || session.user.email
+                    };
+                    updateProfileWithUser();
+                    
+                    // Close email verification modal
+                    document.getElementById('emailVerificationModal').classList.remove('active');
+                    
+                    // Save pending route if exists
+                    if (pendingRoute) {
+                        await savePendingRoute();
+                    }
+                    
+                    // Reload routes
+                    await loadRoutesFromSupabase();
+                    loadFeed();
+                    updateProfileStats();
+                }
+            });
+            
+            // Load routes from Supabase
+            await loadRoutesFromSupabase();
+            
+            loadFeed();
+            updateProfileStats();
+            
+            // Check localStorage status
+            checkStorageStatus();
+            
+            // Check if there's a shared route in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const sharedRouteId = urlParams.get('route');
+            if (sharedRouteId) {
+                viewSharedRoute(sharedRouteId);
+            }
+
+            // Photo input handler
+            document.getElementById('photoInput').addEventListener('change', handlePhotoUpload);
+        });
+
+        // Load routes from Supabase
+        async function loadRoutesFromSupabase() {
+            try {
+                // Check if Supabase is properly configured
+                if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+                    // If user is logged in, load only their routes
+                    if (currentUser) {
+                        const { data, error } = await supabase
+                            .from('routes')
+                            .select('*')
+                            .eq('user_id', currentUser.id)
+                            .order('created', { ascending: false });
+                        
+                        if (error) throw error;
+                        
+                        routes = data || [];
+                        console.log('Loaded user routes from Supabase:', routes.length);
+                    } else {
+                        // Not logged in - load all public routes for feed
+                        const { data, error } = await supabase
+                            .from('routes')
+                            .select('*')
+                            .order('created', { ascending: false });
+                        
+                        if (error) throw error;
+                        
+                        routes = data || [];
+                        console.log('Loaded public routes from Supabase:', routes.length);
+                    }
+                } else {
+                    // Load from localStorage if Supabase not configured
+                    console.log('Supabase not configured, loading from localStorage');
+                    routes = JSON.parse(localStorage.getItem('routes')) || [];
+                }
+            } catch (error) {
+                console.error('Error loading routes:', error.message);
+                // Fallback to localStorage if Supabase fails
+                routes = JSON.parse(localStorage.getItem('routes')) || [];
+            }
+        }
+        
+        // Check localStorage status
+        function checkStorageStatus() {
+            try {
+                const test = 'test';
+                localStorage.setItem(test, test);
+                localStorage.removeItem(test);
+                
+                // Estimate storage used
+                let totalSize = 0;
+                for (let key in localStorage) {
+                    if (localStorage.hasOwnProperty(key)) {
+                        totalSize += localStorage[key].length + key.length;
+                    }
+                }
+                const sizeInMB = (totalSize / (1024 * 1024)).toFixed(2);
+                console.log(`localStorage: ${sizeInMB} MB used (approx. 5-10 MB limit)`);
+                
+                if (sizeInMB > 8) {
+                    console.warn('localStorage is nearly full!');
+                }
+            } catch (e) {
+                console.error('localStorage check failed:', e);
+            }
+        }
+
+        // Initialize Map
+        function initMap() {
+            map = L.map('map').setView([40.7128, -74.0060], 3);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+        }
+
+        // Navigation
+        function showPage(pageName, clickedButton) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(pageName + 'Page').classList.add('active');
+            
+            // Find and activate the correct nav button
+            if (clickedButton) {
+                clickedButton.classList.add('active');
+            } else {
+                // Find button by page name
+                const buttons = document.querySelectorAll('.nav-btn');
+                if (pageName === 'feed') buttons[0].classList.add('active');
+                else if (pageName === 'map') buttons[1].classList.add('active');
+                else if (pageName === 'profile') buttons[2].classList.add('active');
+            }
+
+            if (pageName === 'map' && map) {
+                setTimeout(() => map.invalidateSize(), 100);
+                
+                // Sempre mostrar botão + na página map
+                document.getElementById('mapUploadBtn').classList.add('visible');
+                
+                // Se não há usuário logado e não há rota sendo criada/exibida, esconder elementos
+                if (!currentUser && !currentRoute && currentPhotos.length === 0) {
+                    document.getElementById('routeInfoTop').classList.remove('visible');
+                    document.getElementById('routeInfoBottom').style.display = 'none';
+                    document.getElementById('photoCarousel').classList.remove('visible');
+                }
+            }
+        }
+
+        // Photo Upload Handler
+        function handlePhotoUpload(event) {
+            const files = event.target.files;
+            if (files.length === 0) return;
+            
+            // First time user uploads - show navigation and mark as visited
+            const hasVisited = localStorage.getItem('hasVisited');
+            if (!hasVisited) {
+                localStorage.setItem('hasVisited', 'true');
+                document.getElementById('mainNav').style.display = 'block';
+            }
+            
+            currentPhotos = Array.from(files);
+            
+            const preview = document.getElementById('photoPreview');
+            preview.innerHTML = '';
+            
+            currentPhotos.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            document.getElementById('processBtn').style.display = 'block';
+            
+            // Show top route info section for new route creation
+            const routeInfoTop = document.getElementById('routeInfoTop');
+            routeInfoTop.classList.add('visible');
+            document.getElementById('routeName').value = '';
+            document.getElementById('routeDescription').value = '';
+            
+            // Hide bottom route info (for saved routes)
+            document.getElementById('routeInfoBottom').style.display = 'none';
+            
+            // Hide photo carousel when uploading new photos
+            document.getElementById('photoCarousel').classList.remove('visible');
+            
+            // Show map overlay upload button and navigate to map
+            document.getElementById('mapUploadBtn').classList.add('visible');
+            showPage('map', null);
+        }
+
+        // Process Photos and Extract EXIF
+        async function processPhotos() {
+            if (currentPhotos.length === 0) return;
+
+            // Get route name and description before processing
+            const routeName = document.getElementById('routeName').value.trim();
+            if (!routeName) {
+                alert('Please enter a route name before generating.');
+                document.getElementById('routeName').focus();
+                return;
+            }
+            const routeDescription = document.getElementById('routeDescription').value.trim();
+
+            const processBtn = document.getElementById('processBtn');
+            processBtn.disabled = true;
+            processBtn.textContent = 'Processing...';
+
+            const waypoints = [];
+
+            console.log('Processing', currentPhotos.length, 'photos...');
+
+            for (let file of currentPhotos) {
+                const exifData = await getExifData(file);
+                if (exifData) {
+                    waypoints.push(exifData);
+                    console.log('Found GPS data:', exifData);
+                }
+            }
+
+            console.log('Total waypoints found:', waypoints.length);
+
+            if (waypoints.length === 0) {
+                alert('No GPS data found in photos. Please upload photos with location data.');
+                processBtn.disabled = false;
+                processBtn.textContent = 'Generate Route';
+                return;
+            }
+
+            // Sort by timestamp (oldest to newest)
+            waypoints.sort((a, b) => a.timestamp - b.timestamp);
+
+            // Create route with user-provided name and description
+            const route = {
+                id: Date.now().toString(),
+                name: routeName,
+                description: routeDescription,
+                waypoints: waypoints,
+                created: new Date().toISOString(),
+                photo_count: currentPhotos.length
+            };
+
+            // Reset UI first
+            currentPhotos = [];
+            document.getElementById('photoPreview').innerHTML = '';
+            document.getElementById('photoInput').value = '';
+            processBtn.style.display = 'none';
+            processBtn.disabled = false;
+            processBtn.textContent = 'Generate Route';
+
+            // Make route info fields read-only
+            document.getElementById('routeName').readOnly = true;
+            document.getElementById('routeDescription').readOnly = true;
+
+            // Check if user is logged in
+            if (!currentUser) {
+                // Store route temporarily and show auth modal
+                pendingRoute = route;
+                document.getElementById('authModal').classList.add('active');
+                return;
+            }
+
+            // Add user info to route
+            route.user_id = currentUser.id;
+            route.user_name = currentUser.name;
+
+            // Save to Supabase or localStorage
+            try {
+                // Check if Supabase is properly configured
+                if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+                    const { data, error } = await supabase
+                        .from('routes')
+                        .insert([route])
+                        .select();
+                    
+                    if (error) throw error;
+                    
+                    console.log('Route created and saved to Supabase:', data[0]);
+                    
+                    // Add to local routes array
+                    routes.unshift(data[0]);
+                    
+                    // Display route on map
+                    await displayRoute(data[0]);
+                } else {
+                    // Fallback to localStorage
+                    console.log('Supabase not configured, using localStorage');
+                    routes.unshift(route);
+                    localStorage.setItem('routes', JSON.stringify(routes));
+                    
+                    // Display route on map
+                    await displayRoute(route);
+                }
+            } catch (e) {
+                console.error('Failed to save route, using localStorage fallback:', e);
+                // Fallback to localStorage on error
+                routes.unshift(route);
+                localStorage.setItem('routes', JSON.stringify(routes));
+                await displayRoute(route);
+            }
+
+            // Update feed and profile
+            loadFeed();
+            updateProfileStats();
+
+            alert('Route created successfully!');
+        }
+
+        // Compress image to reduce storage size
+        function compressImage(dataUrl, maxWidth = 800, maxHeight = 800, quality = 0.7) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    // Calculate new dimensions
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height = height * (maxWidth / width);
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width = width * (maxHeight / height);
+                            height = maxHeight;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.src = dataUrl;
+            });
+        }
+
+        // Get EXIF Data from Photo
+        function getExifData(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    const photoDataUrl = e.target.result;
+                    // Compress the image before storing
+                    const compressedPhoto = await compressImage(photoDataUrl);
+                    const img = new Image();
+                    img.onload = function() {
+                        EXIF.getData(img, function() {
+                            const lat = EXIF.getTag(this, 'GPSLatitude');
+                            const lon = EXIF.getTag(this, 'GPSLongitude');
+                            const latRef = EXIF.getTag(this, 'GPSLatitudeRef');
+                            const lonRef = EXIF.getTag(this, 'GPSLongitudeRef');
+                            const dateTime = EXIF.getTag(this, 'DateTime');
+
+                            if (lat && lon) {
+                                const latitude = convertDMSToDD(lat, latRef);
+                                const longitude = convertDMSToDD(lon, lonRef);
+                                
+                                // Parse EXIF DateTime (format: "YYYY:MM:DD HH:MM:SS")
+                                let timestamp = new Date();
+                                let dateTimeISO = timestamp.toISOString();
+                                
+                                if (dateTime) {
+                                    try {
+                                        // Convert EXIF format to ISO: "2023:10:15 14:30:45" -> "2023-10-15T14:30:45"
+                                        const parts = dateTime.split(' ');
+                                        if (parts.length === 2) {
+                                            const datePart = parts[0].replace(/:/g, '-');
+                                            const timePart = parts[1];
+                                            const isoString = `${datePart}T${timePart}`;
+                                            const parsedDate = new Date(isoString);
+                                            
+                                            if (!isNaN(parsedDate.getTime())) {
+                                                timestamp = parsedDate;
+                                                dateTimeISO = parsedDate.toISOString();
+                                            }
+                                        }
+                                    } catch (e) {
+                                        console.warn('Failed to parse EXIF date:', dateTime, e);
+                                    }
+                                }
+
+                                resolve({
+                                    lat: latitude,
+                                    lng: longitude,
+                                    timestamp: timestamp.getTime(),
+                                    dateTime: dateTimeISO,
+                                    photo: compressedPhoto,
+                                    filename: file.name
+                                });
+                            } else {
+                                resolve(null);
+                            }
+                        });
+                    };
+                    img.src = photoDataUrl;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Convert DMS to Decimal Degrees
+        function convertDMSToDD(dms, ref) {
+            const degrees = dms[0];
+            const minutes = dms[1];
+            const seconds = dms[2];
+            let dd = degrees + minutes/60 + seconds/3600;
+            if (ref === 'S' || ref === 'W') {
+                dd = dd * -1;
+            }
+            return dd;
+        }
+
+        // Populate Photo Carousel
+        function populatePhotoCarousel(route) {
+            const carousel = document.getElementById('photoCarousel');
+            const container = document.getElementById('carouselContainer');
+            
+            if (!route.waypoints || route.waypoints.length === 0) {
+                carousel.classList.remove('visible');
+                return;
+            }
+            
+            // Filter waypoints with photos
+            const photosWaypoints = route.waypoints.filter(wp => wp.photo);
+            
+            if (photosWaypoints.length === 0) {
+                carousel.classList.remove('visible');
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            photosWaypoints.forEach((wp, index) => {
+                const item = document.createElement('div');
+                item.className = 'carousel-item';
+                item.innerHTML = `
+                    <img src="${wp.photo}" alt="Photo ${index + 1}">
+                    <div class="carousel-item-number">${index + 1}</div>
+                `;
+                item.onclick = () => openPhotoViewer(route.waypoints.indexOf(wp));
+                container.appendChild(item);
+            });
+            
+            carousel.classList.add('visible');
+        }
+
+        // Display Route on Map
+        async function displayRoute(route) {
+            if (!map) return;
+
+            // Clear existing layers
+            map.eachLayer(layer => {
+                if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+                    map.removeLayer(layer);
+                }
+            });
+
+            const latlngs = route.waypoints.map(wp => [wp.lat, wp.lng]);
+
+            // Add markers with photo thumbnails
+            route.waypoints.forEach((wp, index) => {
+                // Create custom icon with photo thumbnail
+                const iconHtml = wp.photo ? 
+                    `<img src="${wp.photo}" class="photo-thumbnail" onclick="openPhotoViewer(${index})" />` :
+                    `<div style="width: 40px; height: 40px; background: #007bff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">${index + 1}</div>`;
+                
+                const icon = L.divIcon({
+                    html: iconHtml,
+                    className: 'custom-marker',
+                    iconSize: [60, 60],
+                    iconAnchor: [30, 30]
+                });
+                
+                const marker = L.marker([wp.lat, wp.lng], {icon: icon}).addTo(map);
+                const popupContent = `
+                    <div style="text-align: center;">
+                        <strong>Point ${index + 1}</strong><br>
+                        ${new Date(wp.timestamp).toLocaleString()}<br>
+                        ${wp.filename ? `<small>${wp.filename}</small><br>` : ''}
+                        ${wp.photo ? `<button onclick="openPhotoViewer(${index})" style="margin-top: 10px; padding: 5px 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">View Photo</button>` : ''}
+                    </div>
+                `;
+                marker.bindPopup(popupContent);
+            });
+
+            // Get route from OSRM
+            const osrmRoute = await getOSRMRoute(latlngs);
+            
+            if (osrmRoute) {
+                // Add OSRM route polyline
+                const polyline = L.polyline(osrmRoute, {color: '#007bff', weight: 4, opacity: 0.8}).addTo(map);
+                // Center and fit bounds
+                map.fitBounds(polyline.getBounds(), {padding: [50, 50]});
+            } else {
+                // Fallback to straight line if OSRM fails
+                const polyline = L.polyline(latlngs, {color: '#007bff', weight: 3}).addTo(map);
+                map.fitBounds(polyline.getBounds(), {padding: [50, 50]});
+            }
+
+            currentRoute = route;
+            
+            // Hide top route info (for creation)
+            document.getElementById('routeInfoTop').classList.remove('visible');
+            
+            // Show and populate bottom route info (for viewing)
+            const routeInfoBottom = document.getElementById('routeInfoBottom');
+            
+            // Determinar botões de ação baseado em permissões
+            let actionsHTML = '';
+            if (currentUser && route.user_id === currentUser.id) {
+                // Usuário é dono da rota
+                actionsHTML = `
+                    <div id="routeInfoActions" class="route-info-actions">
+                        <button class="edit-route-btn" onclick="toggleEditRoute()">Edit</button>
+                        <button class="share-btn" onclick="shareCurrentRoute()" style="flex: 1; margin: 0;">Share</button>
+                    </div>
+                `;
+            } else if (currentUser) {
+                // Usuário logado mas não é dono - mostrar apenas Share
+                actionsHTML = `
+                    <div id="routeInfoActions" class="route-info-actions">
+                        <button class="share-btn" onclick="shareCurrentRoute()" style="width: 100%; margin: 0;">Share</button>
+                    </div>
+                `;
+            } else {
+                // Não logado - não mostrar botões
+                actionsHTML = '<div id="routeInfoActions" class="route-info-actions" style="display: none;"></div>';
+            }
+            
+            // Reconstruir o HTML completo
+            routeInfoBottom.innerHTML = `
+                <h3 style="margin-bottom: 15px;" id="routeNameDisplay">${route.name || ''}</h3>
+                <p style="font-weight: 500; line-height: 1.6; margin-bottom: 15px; ${route.description ? '' : 'display: none;'}" id="routeDescriptionDisplay">${route.description || ''}</p>
+                ${actionsHTML}
+            `;
+            routeInfoBottom.style.display = 'block';
+            
+            // Populate photo carousel
+            populatePhotoCarousel(route);
+        }
+
+        // Get route from OSRM API
+        async function getOSRMRoute(waypoints) {
+            if (waypoints.length < 2) return null;
+
+            // Build OSRM coordinates string (lon,lat format)
+            const coordinates = waypoints.map(wp => `${wp[1]},${wp[0]}`).join(';');
+            const url = `https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=full&geometries=geojson`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.code === 'Ok' && data.routes && data.routes[0]) {
+                    // Convert GeoJSON coordinates to Leaflet format [lat, lng]
+                    const routeCoords = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                    return routeCoords;
+                }
+            } catch (error) {
+                console.error('OSRM routing error:', error);
+            }
+
+            return null;
+        }
+
+        // Load Feed
+        function loadFeed() {
+            const feedContent = document.getElementById('feedContent');
+            
+            if (routes.length === 0) {
+                feedContent.innerHTML = '<div class="welcome-section"><p>No routes yet. Create your first journey!</p></div>';
+                return;
+            }
+
+            feedContent.innerHTML = '';
+            
+            // Sort routes by creation date (newest first)
+            const sortedRoutes = [...routes].sort((a, b) => new Date(b.created) - new Date(a.created));
+
+            sortedRoutes.forEach((route, index) => {
+                const card = document.createElement('div');
+                card.className = 'route-card';
+                const photoCount = route.photo_count || route.photoCount || route.waypoints.length;
+                card.innerHTML = `
+                    <h3>${route.name}</h3>
+                    ${route.description ? `<p style="font-weight: 500; margin-bottom: 12px;">${route.description}</p>` : ''}
+                    <p><strong>PHOTOS:</strong> ${photoCount}</p>
+                    <p><strong>WAYPOINTS:</strong> ${route.waypoints.length}</p>
+                    <p><strong>CREATED:</strong> ${new Date(route.created).toLocaleDateString()}</p>
+                    <div class="mini-map" id="mini-${route.id}"></div>
+                    <button class="share-btn" onclick="shareRoute('${route.id}'); event.stopPropagation();">Share</button>
+                `;
+                card.onclick = (e) => {
+                    if (!e.target.classList.contains('share-btn')) {
+                        viewRoute(route.id);
+                    }
+                };
+                feedContent.appendChild(card);
+
+                // Create mini map with staggered delay to ensure proper initialization
+                setTimeout(() => createMiniMap(route), 300 + (index * 100));
+            });
+        }
+
+        // Create Mini Map for Route Card
+        async function createMiniMap(route) {
+            const miniMapEl = document.getElementById(`mini-${route.id}`);
+            if (!miniMapEl) {
+                console.warn('Mini map element not found for route:', route.id);
+                return;
+            }
+
+            try {
+                const miniMap = L.map(miniMapEl, {
+                    dragging: false,
+                    scrollWheelZoom: false,
+                    doubleClickZoom: false,
+                    zoomControl: false,
+                    attributionControl: false,
+                    touchZoom: false,
+                    boxZoom: false,
+                    keyboard: false
+                }).setView([route.waypoints[0].lat, route.waypoints[0].lng], 12);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 18,
+                    minZoom: 3
+                }).addTo(miniMap);
+
+                const latlngs = route.waypoints.map(wp => [wp.lat, wp.lng]);
+                
+                // Adicionar marcadores de início e fim
+                if (latlngs.length > 0) {
+                    // Marcador de início (amarelo)
+                    const startIcon = L.divIcon({
+                        html: '<div style="width: 20px; height: 20px; background: #FFFF00; border: 3px solid #000000; border-radius: 50%; box-shadow: 2px 2px 0 #000000;"></div>',
+                        className: '',
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
+                    });
+                    L.marker(latlngs[0], {icon: startIcon}).addTo(miniMap);
+                    
+                    // Marcador de fim (vermelho) - apenas se houver mais de um ponto
+                    if (latlngs.length > 1) {
+                        const endIcon = L.divIcon({
+                            html: '<div style="width: 20px; height: 20px; background: #FF0000; border: 3px solid #000000; border-radius: 50%; box-shadow: 2px 2px 0 #000000;"></div>',
+                            className: '',
+                            iconSize: [20, 20],
+                            iconAnchor: [10, 10]
+                        });
+                        L.marker(latlngs[latlngs.length - 1], {icon: endIcon}).addTo(miniMap);
+                    }
+                }
+                
+                // Try to get OSRM route
+                const osrmRoute = await getOSRMRoute(latlngs);
+                
+                if (osrmRoute && osrmRoute.length > 0) {
+                    const polyline = L.polyline(osrmRoute, {
+                        color: '#0000FF',
+                        weight: 5,
+                        opacity: 0.9
+                    }).addTo(miniMap);
+                    miniMap.fitBounds(polyline.getBounds(), {padding: [30, 30]});
+                } else {
+                    // Fallback to straight line
+                    const polyline = L.polyline(latlngs, {
+                        color: '#0000FF',
+                        weight: 5,
+                        opacity: 0.9,
+                        dashArray: '10, 10'
+                    }).addTo(miniMap);
+                    miniMap.fitBounds(polyline.getBounds(), {padding: [30, 30]});
+                }
+                
+                // Force map to refresh after a short delay
+                setTimeout(() => miniMap.invalidateSize(), 100);
+            } catch (error) {
+                console.error('Error creating mini map:', error);
+            }
+        }
+
+        // View Route
+        function viewRoute(routeId) {
+            const route = routes.find(r => r.id === routeId);
+            if (route) {
+                displayRoute(route);
+                showPage('map', null);
+            }
+        }
+
+        // Share Route
+        function shareRoute(routeId) {
+            const shareLink = `${window.location.origin}${window.location.pathname}?route=${routeId}`;
+            document.getElementById('shareLink').value = shareLink;
+            document.getElementById('shareModal').classList.add('active');
+        }
+
+        // View Shared Route
+        function viewSharedRoute(routeId) {
+            const route = routes.find(r => r.id === routeId);
+            if (route) {
+                displayRoute(route);
+                showPage('map', null);
+            }
+        }
+
+        // Copy Share Link
+        function copyShareLink() {
+            const input = document.getElementById('shareLink');
+            input.select();
+            document.execCommand('copy');
+            alert('Link copied to clipboard!');
+        }
+
+        // Close Share Modal
+        function closeShareModal() {
+            document.getElementById('shareModal').classList.remove('active');
+        }
+
+        // Show Auth Modal
+        function showAuthModal() {
+            document.getElementById('authModal').classList.add('active');
+        }
+
+        // Close Auth Modal
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('active');
+        }
+
+        // Auth Functions
+        function switchAuthTab(tab) {
+            const tabs = document.querySelectorAll('.auth-tab');
+            const forms = document.querySelectorAll('.auth-form');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            forms.forEach(f => f.classList.remove('active'));
+            
+            if (tab === 'login') {
+                tabs[0].classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            } else {
+                tabs[1].classList.add('active');
+                document.getElementById('signupForm').classList.add('active');
+            }
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) throw error;
+                
+                currentUser = {
+                    id: data.user.id,
+                    email: data.user.email,
+                    name: data.user.user_metadata.name || data.user.email
+                };
+                
+                document.getElementById('authModal').classList.remove('active');
+                
+                // Clear form
+                document.getElementById('loginEmail').value = '';
+                document.getElementById('loginPassword').value = '';
+                
+                // Update profile
+                updateProfileWithUser();
+                
+                // Reload routes
+                await loadRoutesFromSupabase();
+                loadFeed();
+                updateProfileStats();
+                
+                // Save pending route if exists
+                if (pendingRoute) {
+                    await savePendingRoute();
+                }
+                
+                alert('Welcome back, ' + currentUser.name + '!');
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Login failed: ' + error.message);
+            }
+        }
+
+        async function handleSignup() {
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
+            
+            if (!name || !email || !password || !passwordConfirm) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            if (password !== passwordConfirm) {
+                alert('Passwords do not match');
+                return;
+            }
+            
+            if (password.length < 6) {
+                alert('Password must be at least 6 characters');
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            name: name
+                        },
+                        emailRedirectTo: window.location.href,
+                        // Disable email confirmation requirement for development
+                        shouldCreateUser: true
+                    }
+                });
+                
+                if (error) throw error;
+                
+                console.log('Signup response:', data);
+                
+                // Check if email confirmation is disabled (auto-confirmed)
+                if (data.user && data.user.confirmed_at) {
+                    // User is auto-confirmed, save immediately
+                    currentUser = {
+                        id: data.user.id,
+                        email: data.user.email,
+                        name: name
+                    };
+                    
+                    document.getElementById('authModal').classList.remove('active');
+                    
+                    // Update profile
+                    updateProfileWithUser();
+                    
+                    // Save pending route if exists
+                    if (pendingRoute) {
+                        await savePendingRoute();
+                    }
+                    
+                    alert('Account created successfully! Welcome, ' + name + '!');
+                } else {
+                    // Email confirmation required
+                    // Close auth modal
+                    document.getElementById('authModal').classList.remove('active');
+                    
+                    // Show email verification modal
+                    document.getElementById('emailVerificationModal').classList.add('active');
+                    
+                    // Store email for opening email app
+                    window.userEmail = email;
+                    
+                    console.log('Signup successful, check email:', email);
+                }
+                
+                // Clear form
+                document.getElementById('signupName').value = '';
+                document.getElementById('signupEmail').value = '';
+                document.getElementById('signupPassword').value = '';
+                document.getElementById('signupPasswordConfirm').value = '';
+                
+            } catch (error) {
+                console.error('Signup error:', error);
+                alert('Signup failed: ' + error.message);
+            }
+        }
+
+        function openEmailApp() {
+            // Try to open default email app
+            if (window.userEmail) {
+                // For desktop, try to open default email client
+                window.location.href = 'mailto:';
+            } else {
+                // Generic email app opening
+                window.open('mailto:', '_blank');
+            }
+        }
+
+        function closeEmailVerificationModal() {
+            document.getElementById('emailVerificationModal').classList.remove('active');
+            alert('Please verify your email before your route can be saved. Check your inbox and click the verification link.');
+        }
+
+        function updateProfileWithUser() {
+            if (currentUser) {
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('profileAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+                document.getElementById('logoutBtn').style.display = 'inline-block';
+                document.getElementById('loginBtn').style.display = 'none';
+            } else {
+                document.getElementById('logoutBtn').style.display = 'none';
+                document.getElementById('loginBtn').style.display = 'inline-block';
+            }
+        }
+
+        async function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                try {
+                    const { error } = await supabase.auth.signOut();
+                    if (error) throw error;
+                    
+                    currentUser = null;
+                    currentRoute = null;
+                    currentPhotos = [];
+                    pendingRoute = null;
+                    
+                    document.getElementById('userName').textContent = 'Traveler';
+                    document.getElementById('profileAvatar').textContent = 'U';
+                    document.getElementById('logoutBtn').style.display = 'none';
+                    
+                    // Limpar o mapa
+                    if (map) {
+                        map.eachLayer(layer => {
+                            if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+                                map.removeLayer(layer);
+                            }
+                        });
+                    }
+                    
+                    // Esconder elementos da página do mapa
+                    document.getElementById('routeInfoTop').classList.remove('visible');
+                    document.getElementById('routeInfoBottom').style.display = 'none';
+                    document.getElementById('photoCarousel').classList.remove('visible');
+                    document.getElementById('photoPreview').innerHTML = '';
+                    document.getElementById('processBtn').style.display = 'none';
+                    
+                    // Load public routes for feed
+                    await loadRoutesFromSupabase();
+                    loadFeed();
+                    updateProfileStats();
+                    
+                    // Navigate to feed
+                    showPage('feed', document.querySelectorAll('.nav-btn')[0]);
+                    
+                    alert('Logged out successfully');
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    alert('Logout failed: ' + error.message);
+                }
+            }
+        }
+
+        async function savePendingRoute() {
+            if (!pendingRoute || !currentUser) return;
+            
+            // Add user info to route
+            pendingRoute.user_id = currentUser.id;
+            pendingRoute.user_name = currentUser.name;
+            
+            try {
+                // Check if Supabase is properly configured
+                if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+                    const { data, error } = await supabase
+                        .from('routes')
+                        .insert([pendingRoute])
+                        .select();
+                    
+                    if (error) throw error;
+                    
+                    console.log('Route saved to Supabase:', data[0]);
+                    
+                    // Add to local routes array
+                    routes.unshift(data[0]);
+                    
+                    // Display route on map
+                    await displayRoute(data[0]);
+                } else {
+                    // Fallback to localStorage
+                    console.log('Supabase not configured, using localStorage');
+                    routes.unshift(pendingRoute);
+                    localStorage.setItem('routes', JSON.stringify(routes));
+                    
+                    // Display route on map
+                    await displayRoute(pendingRoute);
+                }
+                
+                // Update feed and profile
+                loadFeed();
+                updateProfileStats();
+                
+                alert('Route created successfully!');
+            } catch (error) {
+                console.error('Failed to save route, using localStorage fallback:', error);
+                // Fallback to localStorage on error
+                routes.unshift(pendingRoute);
+                localStorage.setItem('routes', JSON.stringify(routes));
+                await displayRoute(pendingRoute);
+                
+                loadFeed();
+                updateProfileStats();
+                alert('Route created successfully!');
+            }
+            
+            pendingRoute = null;
+        }
+
+
+
+        // Toggle Edit Mode for Route Info
+        function toggleEditRoute() {
+            // Verificar se usuário está logado
+            if (!currentUser) {
+                showAuthModal();
+                return;
+            }
+            
+            // Verificar se é dono da rota
+            if (currentRoute && currentRoute.user_id !== currentUser.id) {
+                alert('You can only edit your own routes.');
+                return;
+            }
+            
+            const routeInfoBottom = document.getElementById('routeInfoBottom');
+            const nameDisplay = document.getElementById('routeNameDisplay');
+            const descDisplay = document.getElementById('routeDescriptionDisplay');
+            const editBtn = document.querySelector('.edit-route-btn');
+            
+            // Check if we're in edit mode by looking at the button text
+            if (editBtn.textContent === 'Edit') {
+                // Switch to edit mode - show editable fields
+                routeInfoBottom.innerHTML = `
+                    <div class="route-info-field">
+                        <label for="routeNameEdit">Route Name</label>
+                        <input type="text" id="routeNameEdit" value="${currentRoute.name}" required>
+                    </div>
+                    <div class="route-info-field">
+                        <label for="routeDescriptionEdit">Description</label>
+                        <textarea id="routeDescriptionEdit">${currentRoute.description || ''}</textarea>
+                    </div>
+                    <div class="route-info-actions">
+                        <button class="edit-route-btn" onclick="toggleEditRoute()">Save</button>
+                        <button class="share-btn" onclick="cancelEdit()" style="flex: 1; margin: 0; background: var(--brutal-black);">Cancel</button>
+                    </div>
+                `;
+            } else {
+                // Save changes
+                const newName = document.getElementById('routeNameEdit').value.trim();
+                if (!newName) {
+                    alert('Route name cannot be empty.');
+                    document.getElementById('routeNameEdit').focus();
+                    return;
+                }
+                
+                const newDescription = document.getElementById('routeDescriptionEdit').value.trim();
+                
+                // Update current route
+                if (currentRoute) {
+                    currentRoute.name = newName;
+                    currentRoute.description = newDescription;
+                    
+                    // Update in routes array
+                    const routeIndex = routes.findIndex(r => r.id === currentRoute.id);
+                    if (routeIndex !== -1) {
+                        routes[routeIndex].name = newName;
+                        routes[routeIndex].description = newDescription;
+                        
+                        // Save to Supabase or localStorage
+                        saveRouteUpdate(currentRoute);
+                        
+                        // Update feed and profile
+                        loadFeed();
+                        updateProfileStats();
+                    }
+                }
+                
+                // Switch back to display mode
+                const actionsHTML = currentUser && currentRoute.user_id === currentUser.id ? 
+                    `<div id="routeInfoActions" class="route-info-actions">
+                        <button class="edit-route-btn" onclick="toggleEditRoute()">Edit</button>
+                        <button class="share-btn" onclick="shareCurrentRoute()" style="flex: 1; margin: 0;">Share</button>
+                    </div>` : 
+                    (currentUser ? 
+                        `<div id="routeInfoActions" class="route-info-actions">
+                            <button class="share-btn" onclick="shareCurrentRoute()" style="width: 100%; margin: 0;">Share</button>
+                        </div>` : 
+                        `<div id="routeInfoActions" class="route-info-actions" style="display: none;"></div>`);
+                
+                routeInfoBottom.innerHTML = `
+                    <h3 style="margin-bottom: 15px;" id="routeNameDisplay">${newName}</h3>
+                    <p style="font-weight: 500; line-height: 1.6; margin-bottom: 15px; ${newDescription ? '' : 'display: none;'}" id="routeDescriptionDisplay">${newDescription}</p>
+                    ${actionsHTML}
+                `;
+                
+                alert('Route updated successfully!');
+            }
+        }
+        
+        function cancelEdit() {
+            if (!currentRoute) return;
+            
+            const routeInfoBottom = document.getElementById('routeInfoBottom');
+            const actionsHTML = currentUser && currentRoute.user_id === currentUser.id ? 
+                `<div id="routeInfoActions" class="route-info-actions">
+                    <button class="edit-route-btn" onclick="toggleEditRoute()">Edit</button>
+                    <button class="share-btn" onclick="shareCurrentRoute()" style="flex: 1; margin: 0;">Share</button>
+                </div>` : 
+                (currentUser ? 
+                    `<div id="routeInfoActions" class="route-info-actions">
+                        <button class="share-btn" onclick="shareCurrentRoute()" style="width: 100%; margin: 0;">Share</button>
+                    </div>` : 
+                    `<div id="routeInfoActions" class="route-info-actions" style="display: none;"></div>`);
+            
+            routeInfoBottom.innerHTML = `
+                <h3 style="margin-bottom: 15px;" id="routeNameDisplay">${currentRoute.name}</h3>
+                <p style="font-weight: 500; line-height: 1.6; margin-bottom: 15px; ${currentRoute.description ? '' : 'display: none;'}" id="routeDescriptionDisplay">${currentRoute.description || ''}</p>
+                ${actionsHTML}
+            `;
+        }
+        
+        async function saveRouteUpdate(route) {
+            try {
+                // Check if Supabase is properly configured
+                if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+                    const { error } = await supabase
+                        .from('routes')
+                        .update({ 
+                            name: route.name,
+                            description: route.description
+                        })
+                        .eq('id', route.id);
+                    
+                    if (error) throw error;
+                    console.log('Route updated in Supabase');
+                } else {
+                    // Fallback to localStorage
+                    localStorage.setItem('routes', JSON.stringify(routes));
+                    console.log('Route updated in localStorage');
+                }
+            } catch (e) {
+                console.error('Failed to save route updates:', e);
+                // Fallback to localStorage on error
+                localStorage.setItem('routes', JSON.stringify(routes));
+            }
+        }
+
+        // Share Current Route
+        function shareCurrentRoute() {
+            if (currentRoute) {
+                shareRoute(currentRoute.id);
+            }
+        }
+
+        // Update Profile Stats
+        function updateProfileStats() {
+            const routeListSection = document.getElementById('routeListSection');
+            const clearAllBtn = document.getElementById('clearAllBtn');
+            
+            const profileRoutes = document.getElementById('profileRoutes');
+            
+            // Se não está logado, mostrar perfil vazio
+            if (!currentUser) {
+                document.getElementById('routeCount').textContent = '0 routes created';
+                routeListSection.style.display = 'none';
+                profileRoutes.innerHTML = `
+                    <div class="welcome-section" style="margin-top: 20px;">
+                        <h2>Login Required</h2>
+                        <p style="margin: 20px 0;">Please login to see your routes and create new journeys.</p>
+                        <button class="upload-btn" onclick="showAuthModal()" style="background: var(--brutal-blue);">Login / Sign Up</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Usuário logado - mostrar apenas suas rotas
+            const userRoutes = routes.filter(r => r.user_id === currentUser.id);
+            document.getElementById('routeCount').textContent = `${userRoutes.length} route${userRoutes.length !== 1 ? 's' : ''} created`;
+            
+            if (userRoutes.length === 0) {
+                // Hide route list section when no routes
+                routeListSection.style.display = 'none';
+                
+                profileRoutes.innerHTML = `
+                    <div class="welcome-section" style="margin-top: 20px;">
+                        <h2>No Routes Yet</h2>
+                        <p style="margin: 20px 0;">Start your journey by uploading photos with GPS data!</p>
+                        <button class="upload-btn" onclick="document.getElementById('photoInput').click()">Upload Photos</button>
+                    </div>
+                `;
+                return;
+            }
+
+            // Show route list section when there are routes
+            routeListSection.style.display = 'block';
+            profileRoutes.innerHTML = '';
+            
+            const sortedRoutes = [...userRoutes].sort((a, b) => new Date(b.created) - new Date(a.created));
+
+            sortedRoutes.forEach(route => {
+                const item = document.createElement('div');
+                item.className = 'route-item';
+                item.innerHTML = `
+                    <div class="route-item-header">
+                        <div class="route-item-title">
+                            <strong>${route.name}</strong>
+                            <p style="color: #666; font-size: 14px; margin-top: 5px;">
+                                ${route.waypoints.length} waypoints • ${new Date(route.created).toLocaleDateString()}
+                            </p>
+                        </div>
+                        <button class="route-item-share" onclick="event.stopPropagation(); shareRoute('${route.id}')">Share</button>
+                    </div>
+                `;
+                item.onclick = () => {
+                    viewRoute(route.id);
+                    showPage('map', null);
+                };
+                profileRoutes.appendChild(item);
+            });
+        }
+
+        // Photo Viewer Functions
+        let currentPhotoIndex = 0;
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        function openPhotoViewer(index) {
+            if (!currentRoute || !currentRoute.waypoints[index]) return;
+            
+            currentPhotoIndex = index;
+            const waypoint = currentRoute.waypoints[index];
+            
+            if (waypoint.photo) {
+                document.getElementById('viewerImage').src = waypoint.photo;
+                document.getElementById('photoInfo').textContent = `Photo ${index + 1} of ${currentRoute.waypoints.length} • ${new Date(waypoint.timestamp).toLocaleString()}`;
+                const viewer = document.getElementById('photoViewer');
+                viewer.classList.add('active');
+                
+                // Add touch event listeners for swipe
+                viewer.addEventListener('touchstart', handleTouchStart, { passive: true });
+                viewer.addEventListener('touchend', handleTouchEnd, { passive: true });
+            }
+        }
+
+        function handleTouchStart(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        }
+
+        function handleTouchEnd(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }
+
+        function handleSwipe() {
+            const swipeThreshold = 50; // minimum distance in pixels for swipe
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    // Swipe left - next photo
+                    navigatePhoto(1);
+                } else {
+                    // Swipe right - previous photo
+                    navigatePhoto(-1);
+                }
+            }
+        }
+
+        function closePhotoViewer() {
+            const viewer = document.getElementById('photoViewer');
+            viewer.classList.remove('active');
+            
+            // Remove touch event listeners
+            viewer.removeEventListener('touchstart', handleTouchStart);
+            viewer.removeEventListener('touchend', handleTouchEnd);
+        }
+
+        function navigatePhoto(direction) {
+            if (!currentRoute) return;
+            
+            // Infinite loop navigation
+            currentPhotoIndex = (currentPhotoIndex + direction + currentRoute.waypoints.length) % currentRoute.waypoints.length;
+            
+            const waypoint = currentRoute.waypoints[currentPhotoIndex];
+            if (waypoint.photo) {
+                document.getElementById('viewerImage').src = waypoint.photo;
+                document.getElementById('photoInfo').textContent = `Photo ${currentPhotoIndex + 1} of ${currentRoute.waypoints.length} • ${new Date(waypoint.timestamp).toLocaleString()}`;
+            }
+        }
+
+        // Keyboard navigation for photo viewer
+        document.addEventListener('keydown', function(e) {
+            const viewer = document.getElementById('photoViewer');
+            if (viewer.classList.contains('active')) {
+                if (e.key === 'ArrowLeft') {
+                    navigatePhoto(-1);
+                } else if (e.key === 'ArrowRight') {
+                    navigatePhoto(1);
+                } else if (e.key === 'Escape') {
+                    closePhotoViewer();
+                }
+            }
+        });
+
+        // Clear all routes
+        function clearAllRoutes() {
+            if (confirm('Are you sure you want to delete all routes? This cannot be undone.')) {
+                routes = [];
+                localStorage.removeItem('routes');
+                loadFeed();
+                updateProfileStats();
+                alert('All routes have been deleted.');
+                checkStorageStatus();
+            }
+        }
+    </script>
+</body>
+</html>
