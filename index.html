@@ -2153,43 +2153,74 @@
 
             // Add markers with photo thumbnails
             route.waypoints.forEach((wp, index) => {
-                // Create custom icon with photo thumbnail
+                // Create marker element
+                const el = document.createElement('div');
+                el.className = 'custom-marker';
+                el.style.width = '60px';
+                el.style.height = '60px';
+                el.style.cursor = 'pointer';
+                
                 const iconHtml = wp.photo ? 
-                    `<img src="${wp.photo}" class="photo-thumbnail" onclick="openPhotoViewer(${index})" />` :
-                    `<div style="width: 40px; height: 40px; background: #007bff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">${index + 1}</div>`;
+                    `<img src="${wp.photo}" class="photo-thumbnail" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 3px solid #000;" />` :
+                    `<div style="width: 60px; height: 60px; background: #007bff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border: 3px solid #000;">${index + 1}</div>`;
                 
-                const icon = L.divIcon({
-                    html: iconHtml,
-                    className: 'custom-marker',
-                    iconSize: [60, 60],
-                    iconAnchor: [30, 30]
-                });
+                el.innerHTML = iconHtml;
+                el.onclick = () => openPhotoViewer(index);
                 
-                const marker = L.marker([wp.lat, wp.lng], {icon: icon}).addTo(map);
+                // Create popup content
                 const popupContent = `
-                    <div style="text-align: center;">
+                    <div style="text-align: center; min-width: 150px;">
                         <strong>Point ${index + 1}</strong><br>
                         ${new Date(wp.timestamp).toLocaleString()}<br>
                         ${wp.filename ? `<small>${wp.filename}</small><br>` : ''}
                         ${wp.photo ? `<button onclick="openPhotoViewer(${index})" style="margin-top: 10px; padding: 5px 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">View Photo</button>` : ''}
                     </div>
                 `;
-                marker.bindPopup(popupContent);
+                
+                // Create and add marker
+                const marker = new maplibregl.Marker({element: el})
+                    .setLngLat([wp.lng, wp.lat])
+                    .setPopup(new maplibregl.Popup({offset: 25}).setHTML(popupContent))
+                    .addTo(map);
+                
+                map.markers.push(marker);
             });
 
             // Get route from OSRM
             const osrmRoute = await getOSRMRoute(latlngs);
             
-            if (osrmRoute) {
-                // Add OSRM route polyline
-                const polyline = L.polyline(osrmRoute, {color: '#007bff', weight: 4, opacity: 0.8}).addTo(map);
-                // Center and fit bounds
-                map.fitBounds(polyline.getBounds(), {padding: [50, 50]});
-            } else {
-                // Fallback to straight line if OSRM fails
-                const polyline = L.polyline(latlngs, {color: '#007bff', weight: 3}).addTo(map);
-                map.fitBounds(polyline.getBounds(), {padding: [50, 50]});
-            }
+            // Convert coordinates to [lng, lat] for Maplibre
+            const routeCoords = osrmRoute ? 
+                osrmRoute.map(coord => [coord[1], coord[0]]) : 
+                latlngs.map(coord => [coord[1], coord[0]]);
+            
+            // Add route as GeoJSON layer
+            map.addSource('route', {
+                type: 'geojson',
+                data: {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'LineString',
+                        coordinates: routeCoords
+                    }
+                }
+            });
+            
+            map.addLayer({
+                id: 'route',
+                type: 'line',
+                source: 'route',
+                paint: {
+                    'line-color': '#0000FF',
+                    'line-width': 5,
+                    'line-opacity': 0.8
+                }
+            });
+            
+            // Fit bounds to route
+            const bounds = new maplibregl.LngLatBounds();
+            routeCoords.forEach(coord => bounds.extend(coord));
+            map.fitBounds(bounds, {padding: 50});
 
             currentRoute = route;
             
@@ -2401,88 +2432,102 @@
             }
 
             // Check if map already exists (prevent duplicate initialization)
-            if (miniMapEl._leaflet_id) {
+            if (miniMapEl._miniMapInitialized) {
                 console.warn('Map already initialized for route:', route.id);
                 return;
             }
 
             try {
-                const miniMap = L.map(miniMapEl, {
-                    dragging: false,
-                    scrollWheelZoom: false,
-                    doubleClickZoom: false,
-                    zoomControl: false,
-                    attributionControl: false,
-                    touchZoom: false,
-                    boxZoom: false,
-                    keyboard: false
-                }).setView([route.waypoints[0].lat, route.waypoints[0].lng], 12);
+                const miniMap = new maplibregl.Map({
+                    container: miniMapEl,
+                    style: 'https://demotiles.maplibre.org/style.json',
+                    center: [route.waypoints[0].lng, route.waypoints[0].lat],
+                    zoom: 11,
+                    interactive: false,
+                    attributionControl: false
+                });
 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 18,
-                    minZoom: 3
-                }).addTo(miniMap);
-
-                const latlngs = route.waypoints.map(wp => [wp.lat, wp.lng]);
+                miniMapEl._miniMapInitialized = true;
                 
-                // Adicionar marcadores de início e fim
-                if (latlngs.length > 0) {
-                    // Marcador de início (amarelo)
-                    const startIcon = L.divIcon({
-                        html: '<div style="width: 20px; height: 20px; background: #FFFF00; border: 3px solid #000000; border-radius: 50%; box-shadow: 2px 2px 0 #000000;"></div>',
-                        className: '',
-                        iconSize: [20, 20],
-                        iconAnchor: [10, 10]
-                    });
-                    L.marker(latlngs[0], {icon: startIcon}).addTo(miniMap);
+                miniMap.on('load', async () => {
+                    const latlngs = route.waypoints.map(wp => [wp.lat, wp.lng]);
                     
-                    // Marcador de fim (vermelho) - apenas se houver mais de um ponto
-                    if (latlngs.length > 1) {
-                        const endIcon = L.divIcon({
-                            html: '<div style="width: 20px; height: 20px; background: #FF0000; border: 3px solid #000000; border-radius: 50%; box-shadow: 2px 2px 0 #000000;"></div>',
-                            className: '',
-                            iconSize: [20, 20],
-                            iconAnchor: [10, 10]
-                        });
-                        L.marker(latlngs[latlngs.length - 1], {icon: endIcon}).addTo(miniMap);
+                    // Adicionar marcadores de início e fim
+                    if (latlngs.length > 0) {
+                        // Marcador de início (amarelo)
+                        const startEl = document.createElement('div');
+                        startEl.style.width = '16px';
+                        startEl.style.height = '16px';
+                        startEl.style.background = '#FFFF00';
+                        startEl.style.border = '2px solid #000000';
+                        startEl.style.borderRadius = '50%';
+                        startEl.style.boxShadow = '2px 2px 0 #000000';
+                        
+                        new maplibregl.Marker({element: startEl})
+                            .setLngLat([route.waypoints[0].lng, route.waypoints[0].lat])
+                            .addTo(miniMap);
+                        
+                        // Marcador de fim (vermelho) - apenas se houver mais de um ponto
+                        if (latlngs.length > 1) {
+                            const endEl = document.createElement('div');
+                            endEl.style.width = '16px';
+                            endEl.style.height = '16px';
+                            endEl.style.background = '#FF0000';
+                            endEl.style.border = '2px solid #000000';
+                            endEl.style.borderRadius = '50%';
+                            endEl.style.boxShadow = '2px 2px 0 #000000';
+                            
+                            new maplibregl.Marker({element: endEl})
+                                .setLngLat([route.waypoints[latlngs.length - 1].lng, route.waypoints[latlngs.length - 1].lat])
+                                .addTo(miniMap);
+                        }
                     }
-                }
-                
-                // Try to get OSRM route with timeout
-                let osrmRoute = null;
-                try {
-                    osrmRoute = await Promise.race([
-                        getOSRMRoute(latlngs),
-                        new Promise((_, reject) => setTimeout(() => reject(new Error('OSRM timeout')), 5000))
-                    ]);
-                } catch (osrmError) {
-                    console.warn('OSRM route failed for route:', route.id, osrmError);
-                }
-                
-                if (osrmRoute && osrmRoute.length > 0) {
-                    const polyline = L.polyline(osrmRoute, {
-                        color: '#0000FF',
-                        weight: 5,
-                        opacity: 0.9
-                    }).addTo(miniMap);
-                    miniMap.fitBounds(polyline.getBounds(), {padding: [30, 30]});
-                } else {
-                    // Fallback to straight line
-                    const polyline = L.polyline(latlngs, {
-                        color: '#0000FF',
-                        weight: 5,
-                        opacity: 0.9,
-                        dashArray: '10, 10'
-                    }).addTo(miniMap);
-                    miniMap.fitBounds(polyline.getBounds(), {padding: [30, 30]});
-                }
-                
-                // Force map to refresh after a short delay
-                setTimeout(() => {
-                    if (miniMap) {
-                        miniMap.invalidateSize();
+                    
+                    // Try to get OSRM route with timeout
+                    let osrmRoute = null;
+                    try {
+                        osrmRoute = await Promise.race([
+                            getOSRMRoute(latlngs),
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('OSRM timeout')), 5000))
+                        ]);
+                    } catch (osrmError) {
+                        console.warn('OSRM route failed for route:', route.id, osrmError);
                     }
-                }, 100);
+                    
+                    // Convert coordinates to [lng, lat]
+                    const routeCoords = osrmRoute ? 
+                        osrmRoute.map(coord => [coord[1], coord[0]]) : 
+                        latlngs.map(coord => [coord[1], coord[0]]);
+                    
+                    // Add route line
+                    miniMap.addSource(`route-${route.id}`, {
+                        type: 'geojson',
+                        data: {
+                            type: 'Feature',
+                            geometry: {
+                                type: 'LineString',
+                                coordinates: routeCoords
+                            }
+                        }
+                    });
+                    
+                    miniMap.addLayer({
+                        id: `route-${route.id}`,
+                        type: 'line',
+                        source: `route-${route.id}`,
+                        paint: {
+                            'line-color': '#0000FF',
+                            'line-width': 3,
+                            'line-opacity': 0.9,
+                            'line-dasharray': osrmRoute ? [1] : [2, 2]
+                        }
+                    });
+                    
+                    // Fit bounds
+                    const bounds = new maplibregl.LngLatBounds();
+                    routeCoords.forEach(coord => bounds.extend(coord));
+                    miniMap.fitBounds(bounds, {padding: 30});
+                });
             } catch (error) {
                 console.error('Error creating mini map for route:', route.id, error);
                 // Show a fallback message in the map container
@@ -2503,13 +2548,19 @@
         function closeRouteView() {
             // Clear map layers
             if (map) {
-                map.eachLayer(layer => {
-                    if (layer instanceof L.Marker || layer instanceof L.Polyline) {
-                        map.removeLayer(layer);
-                    }
-                });
+                // Remove all markers
+                if (map.markers) {
+                    map.markers.forEach(marker => marker.remove());
+                    map.markers = [];
+                }
+                
+                // Remove route layers
+                if (map.getLayer('route')) map.removeLayer('route');
+                if (map.getSource('route')) map.removeSource('route');
+                
                 // Reset map view to default
-                map.setView([0, 0], 2);
+                map.setCenter([0, 0]);
+                map.setZoom(2);
             }
             
             // Hide route info and carousel
