@@ -2877,22 +2877,34 @@
                     document.getElementById('userName').textContent = 'Traveler';
                     document.getElementById('profileAvatar').textContent = 'U';
                     document.getElementById('logoutBtn').style.display = 'none';
+                    document.getElementById('clearAllBtn').style.display = 'none';
+                    document.getElementById('loginBtn').style.display = 'inline-flex';
                     
-                    // Limpar o mapa
+                    // Clear the map
                     if (map) {
-                        map.eachLayer(layer => {
-                            if (layer instanceof L.Marker || layer instanceof L.Polyline) {
-                                map.removeLayer(layer);
-                            }
-                        });
+                        // Remove all markers
+                        if (map.markers) {
+                            map.markers.forEach(marker => marker.remove());
+                            map.markers = [];
+                        }
+                        
+                        // Remove route layer and source
+                        if (map.getLayer('route')) map.removeLayer('route');
+                        if (map.getSource('route')) map.removeSource('route');
+                        
+                        // Reset map view
+                        map.setCenter([0, 0]);
+                        map.setZoom(2);
                     }
                     
-                    // Esconder elementos da página do mapa
+                    // Hide map page elements
                     document.getElementById('routeInfoTop').classList.remove('visible');
                     document.getElementById('routeInfoBottom').style.display = 'none';
                     document.getElementById('photoCarousel').classList.remove('visible');
                     document.getElementById('photoPreview').innerHTML = '';
                     document.getElementById('processBtn').style.display = 'none';
+                    document.getElementById('mapUploadBtn').style.display = 'flex';
+                    document.getElementById('closeRouteBtn').style.display = 'none';
                     
                     // Load public routes for feed
                     await loadRoutesFromSupabase();
