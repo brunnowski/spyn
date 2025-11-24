@@ -1850,6 +1850,12 @@
                 else if (pageName === 'profile') buttons[2].classList.add('active');
             }
 
+            // Reset profile page to own profile when clicking profile button
+            if (pageName === 'profile') {
+                currentViewingUserId = null;
+                updateProfileStats();
+            }
+
             if (pageName === 'map' && map) {
                 setTimeout(() => map.resize(), 100);
                 
