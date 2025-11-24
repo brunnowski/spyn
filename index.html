@@ -3210,7 +3210,10 @@
                                 <span>📅 ${new Date(route.created).toLocaleDateString()}</span>
                             </div>
                         </div>
-                        <button class="route-item-share" onclick="event.stopPropagation(); shareRoute('${route.id}')">Share</button>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="route-item-share" onclick="event.stopPropagation(); shareRoute('${route.id}')">Share</button>
+                            <button class="route-item-share" onclick="event.stopPropagation(); deleteRoute('${route.id}')" style="background: var(--brutal-red); color: var(--brutal-white);">Delete</button>
+                        </div>
                     </div>
                 `;
                 item.onclick = () => {
@@ -3218,6 +3221,43 @@
                 };
                 profileRoutes.appendChild(item);
             });
+        }
+
+        // Delete Route Function
+        async function deleteRoute(routeId) {
+            if (!confirm('Are you sure you want to delete this route? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                // Delete the route from Supabase
+                const { error } = await supabase
+                    .from('routes')
+                    .delete()
+                    .eq('id', routeId);
+
+                if (error) throw error;
+
+                // Remove from local arrays
+                const index = routes.findIndex(r => r.id === routeId);
+                if (index > -1) {
+                    routes.splice(index, 1);
+                }
+
+                // If viewing this route, close it
+                if (currentRoute && currentRoute.id === routeId) {
+                    closeRouteView();
+                }
+
+                // Refresh the profile and feed
+                await loadProfile();
+                await loadFeed();
+
+                alert('Route deleted successfully!');
+            } catch (error) {
+                console.error('Error deleting route:', error);
+                alert('Failed to delete route. Please try again.');
+            }
         }
 
         // Photo Viewer Functions
@@ -3542,6 +3582,9 @@
                     
                     const item = document.createElement('div');
                     item.className = 'route-item';
+                    // Check if viewing own profile to show delete button
+                    const isOwnProfile = supabase && currentUser && route.user_id === currentUser.id;
+                    
                     item.innerHTML = `
                         <div class="route-item-header">
                             <div class="route-item-title">
@@ -3555,7 +3598,10 @@
                                     <span>📅 ${new Date(route.created).toLocaleDateString()}</span>
                                 </div>
                             </div>
-                            <button class="route-item-share" onclick="event.stopPropagation(); shareRoute('${route.id}')">Share</button>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="route-item-share" onclick="event.stopPropagation(); shareRoute('${route.id}')">Share</button>
+                                ${isOwnProfile ? `<button class="route-item-share" onclick="event.stopPropagation(); deleteRoute('${route.id}')" style="background: var(--brutal-red); color: var(--brutal-white);">Delete</button>` : ''}
+                            </div>
                         </div>
                     `;
                     item.onclick = () => {
