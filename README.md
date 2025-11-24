@@ -14,16 +14,18 @@ Perfect for travelers, hikers, road trippers, and anyone who wants to visualize 
 ## ✨ Features
 
 - 📸 **Smart Photo Processing** - Automatic GPS extraction from EXIF data
-- 🗺️ **Interactive Maps** - Powered by Leaflet.js with OpenStreetMap tiles
+- 🗺️ **Interactive Maps** - Powered by Maplibre GL with OpenStreetMap tiles
 - 🛣️ **Route Generation** - Intelligent routing using OSRM API
 - 📱 **Responsive Design** - Beautiful brutalist UI that works on all devices
 - 🔐 **User Authentication** - Secure login/signup with Supabase
 - 💾 **Cloud Storage** - Routes saved to Supabase database
 - 🎨 **Photo Carousel** - Swipeable photo viewer with touch support
 - 🔗 **Route Sharing** - Share your journeys with a simple link
-- ✏️ **Route Editing** - Update route names and descriptions
-- 👤 **User Profiles** - Personal dashboard with all your routes
-- 📊 **Public Feed** - Discover routes from other travelers
+- ✏️ **Route Management** - Edit, update, or delete your routes
+- 👤 **User Profiles** - Personal dashboard with statistics and all your routes
+- 📊 **Public Feed** - Discover and explore routes from other travelers
+- ❤️ **Social Interactions** - Like and comment on routes
+- 💬 **Comments System** - Engage with other travelers
 
 ## 🚀 Quick Start
 
@@ -31,8 +33,7 @@ Perfect for travelers, hikers, road trippers, and anyone who wants to visualize 
 
 Visit the live application: **[https://brunnowski.github.io/hyfa/](https://brunnowski.github.io/hyfa/)**
 
-📱 **Access from any device** - smartphone, tablet, or desktop!  
-🌐 **Multi-Device Testing Guide:** [MULTI_DEVICE_ACCESS.md](MULTI_DEVICE_ACCESS.md)
+📱 **Access from any device** - smartphone, tablet, or desktop!
 
 ### Local Development
 
@@ -72,9 +73,11 @@ SPYN works with localStorage by default, but for a better experience with user a
    const SUPABASE_ANON_KEY = 'your-anon-key';
    ```
 
-5. **Run the database setup** (see `SUPABASE_SETUP.md` or `database_setup.sql`)
+5. **Run the database setup** - Execute `database_setup.sql` in your Supabase SQL Editor
 
-For detailed Supabase configuration, see [SUPABASE_SETUP.md](SUPABASE_SETUP.md).
+6. **Configure Redirect URLs** in Supabase Dashboard → Authentication → URL Configuration:
+   - Add your development URLs (e.g., `http://localhost:3000`)
+   - Add your production URL (`https://brunnowski.github.io/hyfa/`)
 
 ## 📖 How to Use
 
@@ -109,7 +112,7 @@ SPYN features a bold **brutalist design** aesthetic:
 ## 🛠️ Technologies
 
 - **Frontend**: Vanilla JavaScript, HTML5, CSS3
-- **Maps**: [Leaflet.js](https://leafletjs.com/) v1.9.4
+- **Maps**: [Maplibre GL JS](https://maplibre.org/) v4.0.0
 - **Routing**: [OSRM](https://project-osrm.org/) API
 - **Authentication**: [Supabase](https://supabase.com/) Auth
 - **Database**: Supabase PostgreSQL
@@ -120,10 +123,10 @@ SPYN features a bold **brutalist design** aesthetic:
 ```
 hyfa/
 ├── index.html              # Main application file (SPA)
-├── README.md               # This file
-├── SUPABASE_SETUP.md       # Supabase configuration guide
-├── database_setup.sql      # Database schema and policies
-└── .gitignore             # Git ignore rules
+├── README.md               # Project documentation
+├── database_setup.sql      # Complete database schema and policies
+├── TERMS_OF_SERVICE.md     # Terms of service and legal information
+└── .github/                # GitHub Actions workflows
 ```
 
 ## 🌐 Browser Compatibility
@@ -176,7 +179,7 @@ Read the full [Terms of Service](TERMS_OF_SERVICE.md) for complete details.
 ## 🙏 Acknowledgments
 
 - OpenStreetMap contributors
-- Leaflet.js team
+- Maplibre GL team
 - OSRM project
 - Supabase team
 

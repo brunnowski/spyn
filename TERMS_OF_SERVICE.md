@@ -181,13 +181,13 @@ We reserve the right to:
 ## 17. Dispute Resolution
 
 ### 17.1 Governing Law
-These Terms are governed by the laws of the United States and the State of [Your State], without regard to conflict of law provisions.
+These Terms are governed by applicable laws in your jurisdiction. For users in the United States, federal laws and the laws of the state where you reside will apply.
 
-### 17.2 Arbitration
-Any disputes will be resolved through binding arbitration rather than in court, except where prohibited by law.
+### 17.2 Dispute Resolution
+Any disputes should first be addressed through good faith negotiation. If disputes cannot be resolved informally, they may be resolved through applicable legal channels in your jurisdiction.
 
-### 17.3 Class Action Waiver
-You agree to resolve disputes individually and waive the right to participate in class actions.
+### 17.3 Informal Resolution
+We encourage users to contact us first to resolve any concerns before pursuing formal legal action.
 
 ## 18. General Provisions
 
@@ -209,8 +209,8 @@ We are not liable for delays or failures due to circumstances beyond our reasona
 ## 19. Contact Information
 
 For questions about these Terms, please contact:
-- Email: support@spyn.app
 - GitHub: https://github.com/brunnowski/hyfa
+- GitHub Issues: https://github.com/brunnowski/hyfa/issues
 
 ## 20. Acknowledgment
 
