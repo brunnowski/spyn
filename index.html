@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPYN - Photo Journey Routes</title>
     
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Maplibre GL CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.0.0/dist/maplibre-gl.css" />
     
     <style>
         /* Brutalist Design System */
@@ -120,44 +120,64 @@
         /* Navigation */
         .nav {
             background: var(--brutal-yellow);
-            border-bottom: var(--brutal-border) solid var(--brutal-black);
+            border-top: var(--brutal-border) solid var(--brutal-black);
             position: fixed;
-            top: 0;
+            bottom: 0;
             left: 0;
             right: 0;
             z-index: 1000;
             display: none;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
         }
 
         .nav-content {
             display: flex;
             justify-content: space-around;
             align-items: center;
-            max-width: 600px;
+            max-width: 100%;
             margin: 0 auto;
-            padding: 10px;
+            padding: 8px 10px;
             position: relative;
+            gap: 8px;
         }
 
         .nav-btn {
             background: var(--brutal-white);
             border: var(--brutal-border) solid var(--brutal-black);
-            font-size: 0.875rem;
+            font-size: 0.665rem;
             font-weight: 900;
             text-transform: uppercase;
             cursor: pointer;
-            padding: 10px 12px;
+            padding: 9px 7px;
             transition: all 0.1s ease;
-            box-shadow: 4px 4px 0 var(--brutal-black);
+            box-shadow: 3px 3px 0 var(--brutal-black);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            min-height: 49px;
+        }
+
+        .nav-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 var(--brutal-black);
+        }
+
+        .nav-btn.active {
+            background: var(--brutal-blue);
+            color: var(--brutal-white);
         }
 
         @media (min-width: 768px) {
             .nav-content {
                 padding: 15px;
+                max-width: 600px;
+                gap: 12px;
             }
             .nav-btn {
-                font-size: 1.25rem;
-                padding: 12px 20px;
+                font-size: 1rem;
+                padding: 16px 20px;
             }
         }
 
@@ -283,15 +303,42 @@
             font-size: 28px;
             font-weight: 900;
             cursor: pointer;
-            display: none;
+            display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 6px 6px 0 var(--brutal-black);
             transition: all 0.1s ease;
         }
 
-        .map-upload-overlay.visible {
+        .close-route-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--brutal-red);
+            color: var(--brutal-white);
+            border: var(--brutal-border) solid var(--brutal-black);
+            width: 60px;
+            height: 60px;
+            font-size: 36px;
+            font-weight: 900;
+            cursor: pointer;
             display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 6px 6px 0 var(--brutal-black);
+            transition: all 0.1s ease;
+            line-height: 1;
+        }
+
+        .close-route-overlay:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0 var(--brutal-black);
+        }
+
+        .close-route-overlay:active {
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0 var(--brutal-black);
         }
 
         .map-upload-overlay:hover {
@@ -327,15 +374,15 @@
         /* Pages */
         .page {
             display: none;
-            padding-top: 70px;
+            padding-top: 20px;
             min-height: 100vh;
-            padding-bottom: 20px;
+            padding-bottom: 75px;
         }
 
         @media (min-width: 768px) {
             .page {
-                padding-top: 90px;
-                padding-bottom: 40px;
+                padding-top: 40px;
+                padding-bottom: 100px;
             }
         }
 
@@ -1322,9 +1369,30 @@
     <!-- Navigation -->
     <nav class="nav" id="mainNav">
         <div class="nav-content">
-            <button class="nav-btn" onclick="showPage('feed', this)">FEED</button>
-            <button class="nav-btn" onclick="showPage('map', this)">MAP</button>
-            <button class="nav-btn" onclick="showPage('profile', this)">PROFILE</button>
+            <button class="nav-btn" onclick="showPage('feed', this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <span>FEED</span>
+            </button>
+            <button class="nav-btn" onclick="showPage('map', this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+                    <line x1="8" y1="2" x2="8" y2="18"></line>
+                    <line x1="16" y1="6" x2="16" y2="22"></line>
+                </svg>
+                <span>MAP</span>
+            </button>
+            <button class="nav-btn" onclick="showPage('profile', this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span>PROFILE</span>
+            </button>
         </div>
     </nav>
 
@@ -1344,6 +1412,19 @@
     <div id="feedPage" class="page">
         <div class="container">
             <h1 style="margin-bottom: 20px;">Route Feed</h1>
+            
+            <!-- Feed Filters -->
+            <div style="margin-bottom: 25px; padding: 20px; background: #FFFFFF; border: 4px solid #000000; box-shadow: 6px 6px 0 #000000;">
+                <label style="display: block; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; font-size: 0.875rem;">Sort By:</label>
+                <select id="feedFilter" onchange="applyFeedFilter()" style="width: 100%; padding: 12px 15px; font-family: inherit; font-weight: 700; font-size: 1rem; border: 3px solid #000000; background: #FFFFFF; cursor: pointer; text-transform: uppercase;">
+                    <option value="recent">📅 Most Recent</option>
+                    <option value="oldest">⏰ Oldest First</option>
+                    <option value="likes">❤️ Most Liked</option>
+                    <option value="comments">💬 Most Commented</option>
+                    <option value="photos">📸 Most Photos</option>
+                </select>
+            </div>
+            
             <div id="feedContent"></div>
         </div>
     </div>
@@ -1368,6 +1449,7 @@
             <div class="map-container">
                 <div id="map" style="margin-top: 20px;"></div>
                 <button id="mapUploadBtn" class="map-upload-overlay" onclick="document.getElementById('photoInput').click()" title="Upload More Photos">+</button>
+                <button id="closeRouteBtn" class="close-route-overlay" onclick="closeRouteView()" title="Close Route" style="display: none;">×</button>
             </div>
             <div id="photoCarousel" class="photo-carousel">
                 <h3>Route Photos</h3>
@@ -1506,8 +1588,8 @@
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Maplibre GL JS -->
+    <script src="https://unpkg.com/maplibre-gl@4.0.0/dist/maplibre-gl.js"></script>
     
     <!-- EXIF JS -->
     <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
@@ -1598,9 +1680,23 @@
                     // Close email verification modal
                     document.getElementById('emailVerificationModal').classList.remove('active');
                     
+                    // Check for pending route from localStorage (after email confirmation)
+                    const savedPendingRoute = localStorage.getItem('pendingRouteAfterSignup');
+                    if (savedPendingRoute) {
+                        try {
+                            pendingRoute = JSON.parse(savedPendingRoute);
+                            localStorage.removeItem('pendingRouteAfterSignup');
+                            console.log('Restored pending route from localStorage');
+                        } catch (e) {
+                            console.error('Error parsing saved pending route:', e);
+                        }
+                    }
+                    
                     // Save pending route if exists
                     if (pendingRoute) {
                         await savePendingRoute();
+                        // Navigate to map to show the saved route
+                        showPage('map', document.querySelectorAll('.nav-btn')[1]);
                     }
                     
                     // Reload routes
@@ -1688,10 +1784,19 @@
 
         // Initialize Map
         function initMap() {
-            map = L.map('map').setView([40.7128, -74.0060], 3);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
+            map = new maplibregl.Map({
+                container: 'map',
+                style: 'https://demotiles.maplibre.org/style.json',
+                center: [-74.0060, 40.7128], // Note: Maplibre uses [lng, lat]
+                zoom: 2,
+                attributionControl: true
+            });
+            
+            // Add navigation controls
+            map.addControl(new maplibregl.NavigationControl(), 'top-left');
+            
+            // Store markers for later removal
+            map.markers = [];
         }
 
         // Navigation
@@ -1713,10 +1818,7 @@
             }
 
             if (pageName === 'map' && map) {
-                setTimeout(() => map.invalidateSize(), 100);
-                
-                // Sempre mostrar botão + na página map
-                document.getElementById('mapUploadBtn').classList.add('visible');
+                setTimeout(() => map.resize(), 100);
                 
                 // Se não há usuário logado e não há rota sendo criada/exibida, esconder elementos
                 if (!currentUser && !currentRoute && currentPhotos.length === 0) {
@@ -1768,8 +1870,7 @@
             // Hide photo carousel when uploading new photos
             document.getElementById('photoCarousel').classList.remove('visible');
             
-            // Show map overlay upload button and navigate to map
-            document.getElementById('mapUploadBtn').classList.add('visible');
+            // Navigate to map
             showPage('map', null);
         }
 
@@ -2038,12 +2139,15 @@
         async function displayRoute(route) {
             if (!map) return;
 
-            // Clear existing layers
-            map.eachLayer(layer => {
-                if (layer instanceof L.Marker || layer instanceof L.Polyline) {
-                    map.removeLayer(layer);
-                }
-            });
+            // Clear existing markers
+            if (map.markers) {
+                map.markers.forEach(marker => marker.remove());
+                map.markers = [];
+            }
+            
+            // Remove existing route layers
+            if (map.getLayer('route')) map.removeLayer('route');
+            if (map.getSource('route')) map.removeSource('route');
 
             const latlngs = route.waypoints.map(wp => [wp.lat, wp.lng]);
 
@@ -2091,6 +2195,10 @@
             
             // Hide top route info (for creation)
             document.getElementById('routeInfoTop').classList.remove('visible');
+            
+            // Hide + button and show X button when viewing saved route
+            document.getElementById('mapUploadBtn').style.display = 'none';
+            document.getElementById('closeRouteBtn').style.display = 'flex';
             
             // Show and populate bottom route info (for viewing)
             const routeInfoBottom = document.getElementById('routeInfoBottom');
@@ -2154,7 +2262,7 @@
         }
 
         // Load Feed - Shows ALL public routes from all users
-        function loadFeed() {
+        function loadFeed(filterType = 'recent') {
             const feedContent = document.getElementById('feedContent');
             
             if (routes.length === 0) {
@@ -2164,8 +2272,40 @@
 
             feedContent.innerHTML = '';
             
-            // Sort all public routes by creation date (newest first)
-            const sortedRoutes = [...routes].sort((a, b) => new Date(b.created) - new Date(a.created));
+            // Sort routes based on filter type
+            let sortedRoutes = [...routes];
+            
+            switch(filterType) {
+                case 'recent':
+                    sortedRoutes.sort((a, b) => new Date(b.created) - new Date(a.created));
+                    break;
+                case 'oldest':
+                    sortedRoutes.sort((a, b) => new Date(a.created) - new Date(b.created));
+                    break;
+                case 'likes':
+                    sortedRoutes.sort((a, b) => {
+                        const aLikes = (routeLikes[a.id] || []).length;
+                        const bLikes = (routeLikes[b.id] || []).length;
+                        return bLikes - aLikes;
+                    });
+                    break;
+                case 'comments':
+                    sortedRoutes.sort((a, b) => {
+                        const aComments = (routeComments[a.id] || []).length;
+                        const bComments = (routeComments[b.id] || []).length;
+                        return bComments - aComments;
+                    });
+                    break;
+                case 'photos':
+                    sortedRoutes.sort((a, b) => {
+                        const aPhotos = a.photo_count || a.photoCount || a.waypoints.length;
+                        const bPhotos = b.photo_count || b.photoCount || b.waypoints.length;
+                        return bPhotos - aPhotos;
+                    });
+                    break;
+                default:
+                    sortedRoutes.sort((a, b) => new Date(b.created) - new Date(a.created));
+            }
 
             sortedRoutes.forEach((route, index) => {
                 const card = document.createElement('div');
@@ -2187,7 +2327,7 @@
                         ${userId ? `<span class="user-link" onclick="viewUserProfile('${userId}', '${createdBy.replace(/'/g, "\\'")}'); event.stopPropagation();">${createdBy}</span>` : createdBy}
                     </p>
                     <p><strong>PHOTOS:</strong> ${photoCount}</p>
-                    <p><strong>WAYPOINTS:</strong> ${route.waypoints.length}</p>
+                    <p><strong>SPOTS:</strong> ${route.waypoints.length}</p>
                     <p><strong>CREATED:</strong> ${new Date(route.created).toLocaleDateString()}</p>
                     <div class="mini-map" id="mini-${route.id}"></div>
                     
@@ -2224,12 +2364,17 @@
                     </div>
                 `;
                 card.onclick = (e) => {
-                    if (!e.target.classList.contains('share-btn') && 
-                        !e.target.classList.contains('action-btn') &&
-                        !e.target.classList.contains('comment-submit') &&
-                        !e.target.classList.contains('user-link')) {
-                        viewRoute(route.id);
+                    // Não abrir rota se clicar em botões, inputs ou links
+                    if (e.target.classList.contains('share-btn') || 
+                        e.target.classList.contains('action-btn') ||
+                        e.target.classList.contains('comment-submit') ||
+                        e.target.classList.contains('comment-input') ||
+                        e.target.classList.contains('user-link') ||
+                        e.target.closest('.route-actions') ||
+                        e.target.closest('.comments-section')) {
+                        return;
                     }
+                    viewRoute(route.id);
                 };
                 feedContent.appendChild(card);
 
@@ -2350,8 +2495,35 @@
             const route = routes.find(r => r.id === routeId);
             if (route) {
                 displayRoute(route);
-                showPage('map', null);
+                showPage('map', document.querySelectorAll('.nav-btn')[1]);
             }
+        }
+        
+        // Close Route View and return to clean map
+        function closeRouteView() {
+            // Clear map layers
+            if (map) {
+                map.eachLayer(layer => {
+                    if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+                        map.removeLayer(layer);
+                    }
+                });
+                // Reset map view to default
+                map.setView([0, 0], 2);
+            }
+            
+            // Hide route info and carousel
+            document.getElementById('routeInfoBottom').style.display = 'none';
+            document.getElementById('photoCarousel').classList.remove('visible');
+            
+            // Show + button and hide X button
+            document.getElementById('mapUploadBtn').style.display = 'flex';
+            document.getElementById('closeRouteBtn').style.display = 'none';
+            
+            // Clear current route
+            currentRoute = null;
+            
+            console.log('Route view closed, map cleared');
         }
 
         // Share Route
@@ -2451,6 +2623,8 @@
                 // Save pending route if exists
                 if (pendingRoute) {
                     await savePendingRoute();
+                    // Navigate to map to show the saved route
+                    showPage('map', document.querySelectorAll('.nav-btn')[1]);
                 }
                 
                 alert('Welcome back, ' + currentUser.name + '!');
@@ -2527,6 +2701,12 @@
                     alert('Account created successfully! Welcome, ' + name + '!');
                 } else {
                     // Email confirmation required
+                    // Save pending route state to localStorage
+                    if (pendingRoute) {
+                        localStorage.setItem('pendingRouteAfterSignup', JSON.stringify(pendingRoute));
+                        console.log('Saved pending route to localStorage for after email confirmation');
+                    }
+                    
                     // Close auth modal
                     document.getElementById('authModal').classList.remove('active');
                     
@@ -2927,7 +3107,7 @@
                             <strong>${route.name}</strong>
                             ${route.description ? `<p style="font-weight: 500; margin: 8px 0; color: #333;">${route.description}</p>` : ''}
                             <div class="route-item-meta">
-                                <span>📍 ${route.waypoints.length} waypoints</span>
+                                <span>📍 ${route.waypoints.length} spots</span>
                                 <span>📸 ${photoCount} photos</span>
                                 <span>❤️ ${likes.length} likes</span>
                                 <span>💬 ${comments.length} comments</span>
@@ -2939,7 +3119,6 @@
                 `;
                 item.onclick = () => {
                     viewRoute(route.id);
-                    showPage('map', null);
                 };
                 profileRoutes.appendChild(item);
             });
@@ -3085,9 +3264,21 @@
         }
         
         // Toggle Comments Section
+        // Apply Feed Filter
+        function applyFeedFilter() {
+            const filterSelect = document.getElementById('feedFilter');
+            const filterType = filterSelect.value;
+            loadFeed(filterType);
+        }
+        
         function toggleComments(routeId) {
             const commentsSection = document.getElementById(`comments-${routeId}`);
-            commentsSection.classList.toggle('visible');
+            if (commentsSection) {
+                commentsSection.classList.toggle('visible');
+                console.log('Toggled comments for route:', routeId, 'visible:', commentsSection.classList.contains('visible'));
+            } else {
+                console.error('Comments section not found for route:', routeId);
+            }
         }
         
         // Add Comment to Route
