@@ -2237,7 +2237,7 @@
             // Fit bounds to route
             const bounds = new maplibregl.LngLatBounds();
             routeCoords.forEach(coord => bounds.extend(coord));
-            map.fitBounds(bounds, {padding: 50});
+            map.fitBounds(bounds, {padding: 50, animate: false, duration: 0});
 
             currentRoute = route;
             
@@ -2426,8 +2426,8 @@
                 };
                 feedContent.appendChild(card);
 
-                // Create mini map with staggered delay to ensure proper initialization
-                setTimeout(() => createMiniMap(route), 300 + (index * 100));
+                // Create mini map immediately
+                createMiniMap(route);
             });
         }
 
@@ -2443,8 +2443,8 @@
             const rect = miniMapEl.getBoundingClientRect();
             if (rect.width === 0 || rect.height === 0) {
                 console.warn('Mini map element has no dimensions for route:', route.id);
-                // Retry after a delay
-                setTimeout(() => createMiniMap(route), 200);
+                // Retry after a shorter delay
+                setTimeout(() => createMiniMap(route), 50);
                 return;
             }
 
@@ -2517,21 +2517,8 @@
                         }
                     }
                     
-                    // Try to get OSRM route with timeout
-                    let osrmRoute = null;
-                    try {
-                        osrmRoute = await Promise.race([
-                            getOSRMRoute(latlngs),
-                            new Promise((_, reject) => setTimeout(() => reject(new Error('OSRM timeout')), 5000))
-                        ]);
-                    } catch (osrmError) {
-                        console.warn('OSRM route failed for route:', route.id, osrmError);
-                    }
-                    
-                    // Convert coordinates to [lng, lat]
-                    const routeCoords = osrmRoute ? 
-                        osrmRoute.map(coord => [coord[1], coord[0]]) : 
-                        latlngs.map(coord => [coord[1], coord[0]]);
+                    // Use direct waypoints for mini-maps (skip OSRM for faster loading)
+                    const routeCoords = latlngs.map(coord => [coord[1], coord[0]]);
                     
                     // Add route line
                     miniMap.addSource(`route-${route.id}`, {
@@ -2552,15 +2539,14 @@
                         paint: {
                             'line-color': '#0000FF',
                             'line-width': 3,
-                            'line-opacity': 0.9,
-                            'line-dasharray': osrmRoute ? [1] : [2, 2]
+                            'line-opacity': 0.9
                         }
                     });
                     
                     // Fit bounds
                     const bounds = new maplibregl.LngLatBounds();
                     routeCoords.forEach(coord => bounds.extend(coord));
-                    miniMap.fitBounds(bounds, {padding: 30});
+                    miniMap.fitBounds(bounds, {padding: 30, animate: false, duration: 0});
                 });
             } catch (error) {
                 console.error('Error creating mini map for route:', route.id, error);
