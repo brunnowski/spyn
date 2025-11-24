@@ -3741,11 +3741,13 @@
                 followText.textContent = isFollowing ? 'Unfollow' : 'Follow';
                 followIcon.textContent = isFollowing ? '➖' : '➕';
             } else {
-                // Not logged in - show login button
+                // Not logged in - show follow button that will prompt login
                 document.getElementById('clearAllBtn').style.display = 'none';
                 document.getElementById('logoutBtn').style.display = 'none';
-                document.getElementById('loginBtn').style.display = 'inline-flex';
-                followBtn.style.display = 'none';
+                document.getElementById('loginBtn').style.display = 'none';
+                followBtn.style.display = 'inline-flex';
+                followText.textContent = 'Follow';
+                followIcon.textContent = '➕';
             }
             
             showPage('profile', document.querySelectorAll('.nav-btn')[2]);
