@@ -31,6 +31,9 @@ Perfect for travelers, hikers, road trippers, and anyone who wants to visualize 
 
 Visit the live application: **[https://brunnowski.github.io/hyfa/](https://brunnowski.github.io/hyfa/)**
 
+📱 **Access from any device** - smartphone, tablet, or desktop!  
+🌐 **Multi-Device Testing Guide:** [MULTI_DEVICE_ACCESS.md](MULTI_DEVICE_ACCESS.md)
+
 ### Local Development
 
 1. **Clone the repository**
