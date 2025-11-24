@@ -3347,14 +3347,18 @@
                     closeRouteView();
                 }
 
+                // Reload routes from Supabase
+                await loadRoutesFromSupabase();
+                
                 // Refresh the profile and feed
-                await loadProfile();
-                await loadFeed();
+                updateProfileStats();
+                loadFeed();
 
                 alert('Route deleted successfully!');
             } catch (error) {
                 console.error('Error deleting route:', error);
-                alert('Failed to delete route. Please try again.');
+                console.error('Error details:', error.message);
+                alert('Failed to delete route: ' + (error.message || 'Unknown error'));
             }
         }
 
