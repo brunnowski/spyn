@@ -872,6 +872,18 @@
             color: var(--brutal-white);
         }
 
+        .profile-action-btn.primary.following {
+            background: var(--brutal-black);
+            color: var(--brutal-white);
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--brutal-black);
+        }
+
+        .profile-action-btn.primary.following:hover {
+            transform: translate(0px, 0px);
+            box-shadow: 4px 4px 0 var(--brutal-black);
+        }
+
         .profile-action-btn.danger {
             background: var(--brutal-red);
             color: var(--brutal-white);
@@ -3757,12 +3769,20 @@
                 const isFollowing = follows[currentUser.id] && follows[currentUser.id].includes(userId);
                 followText.textContent = isFollowing ? 'Unfollow' : 'Follow';
                 followIcon.textContent = isFollowing ? '➖' : '➕';
+                
+                // Add/remove "following" class for visual state
+                if (isFollowing) {
+                    followBtn.classList.add('following');
+                } else {
+                    followBtn.classList.remove('following');
+                }
             } else {
                 // Not logged in - show follow button that will prompt login
                 document.getElementById('clearAllBtn').style.display = 'none';
                 document.getElementById('logoutBtn').style.display = 'none';
                 document.getElementById('loginBtn').style.display = 'none';
                 followBtn.style.display = 'inline-flex';
+                followBtn.classList.remove('following');
                 followText.textContent = 'Follow';
                 followIcon.textContent = '➕';
             }
@@ -3809,6 +3829,7 @@
                     
                     followText.textContent = 'Follow';
                     followIcon.textContent = '➕';
+                    followBtn.classList.remove('following');
                 } else {
                     // Follow
                     const { error } = await supabase
@@ -3829,6 +3850,7 @@
                     
                     followText.textContent = 'Unfollow';
                     followIcon.textContent = '➖';
+                    followBtn.classList.add('following');
                 }
 
                 // Update followers count
