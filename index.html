@@ -873,15 +873,15 @@
         }
 
         .profile-action-btn.primary.following {
-            background: var(--brutal-black);
-            color: var(--brutal-white);
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0 var(--brutal-black);
+            background: var(--brutal-black) !important;
+            color: var(--brutal-white) !important;
+            transform: translate(2px, 2px) !important;
+            box-shadow: 2px 2px 0 var(--brutal-black) !important;
         }
 
         .profile-action-btn.primary.following:hover {
-            transform: translate(0px, 0px);
-            box-shadow: 4px 4px 0 var(--brutal-black);
+            transform: translate(0px, 0px) !important;
+            box-shadow: 4px 4px 0 var(--brutal-black) !important;
         }
 
         .profile-action-btn.danger {
@@ -3773,8 +3773,10 @@
                 // Add/remove "following" class for visual state
                 if (isFollowing) {
                     followBtn.classList.add('following');
+                    console.log('Added "following" class. Classes:', followBtn.className);
                 } else {
                     followBtn.classList.remove('following');
+                    console.log('Removed "following" class. Classes:', followBtn.className);
                 }
             } else {
                 // Not logged in - show follow button that will prompt login
@@ -3851,6 +3853,7 @@
                     followText.textContent = 'Unfollow';
                     followIcon.textContent = '➖';
                     followBtn.classList.add('following');
+                    console.log('Added "following" class. Button classes:', followBtn.className);
                 }
 
                 // Update followers count
