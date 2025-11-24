@@ -694,6 +694,18 @@
             background: var(--brutal-yellow);
         }
 
+        .action-btn.following {
+            background: var(--brutal-black) !important;
+            color: var(--brutal-white) !important;
+            transform: translate(1px, 1px) !important;
+            box-shadow: 2px 2px 0 var(--brutal-black) !important;
+        }
+
+        .action-btn.following:hover {
+            transform: translate(0px, 0px) !important;
+            box-shadow: 3px 3px 0 var(--brutal-black) !important;
+        }
+
         /* Comments Section */
         .comments-section {
             margin-top: 15px;
@@ -2435,13 +2447,27 @@
                 const comments = routeComments[route.id] || [];
                 const isLiked = currentUser && likes.includes(currentUser.id);
                 
+                // Check if current user is following this route creator
+                const isFollowingCreator = currentUser && userId && follows[currentUser.id] && follows[currentUser.id].includes(userId);
+                const isOwnRoute = currentUser && userId === currentUser.id;
+                
                 card.innerHTML = `
                     <h3>${route.name}</h3>
                     ${route.description ? `<p style="font-weight: 500; margin-bottom: 12px;">${route.description}</p>` : ''}
-                    <p style="font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; color: #666;">
-                        <strong>BY:</strong> 
-                        ${userId ? `<span class="user-link" onclick="viewUserProfile('${userId}', '${createdBy.replace(/'/g, "\\'")}'); event.stopPropagation();">${createdBy}</span>` : createdBy}
-                    </p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <p style="font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; color: #666; margin: 0;">
+                            <strong>BY:</strong> 
+                            ${userId ? `<span class="user-link" onclick="viewUserProfile('${userId}', '${createdBy.replace(/'/g, "\\'")}'); event.stopPropagation();">${createdBy}</span>` : createdBy}
+                        </p>
+                        ${userId && !isOwnRoute ? `
+                            <button class="action-btn ${isFollowingCreator ? 'following' : ''}" 
+                                    onclick="quickFollow('${userId}', '${createdBy.replace(/'/g, "\\'")}'); event.stopPropagation();"
+                                    id="follow-btn-${userId}"
+                                    style="padding: 4px 12px; font-size: 11px; margin: 0;">
+                                ${isFollowingCreator ? '✓ Following' : '+ Follow'}
+                            </button>
+                        ` : ''}
+                    </div>
                     <p><strong>PHOTOS:</strong> ${photoCount}</p>
                     <p><strong>SPOTS:</strong> ${route.waypoints.length}</p>
                     <p><strong>CREATED:</strong> ${new Date(route.created).toLocaleDateString()}</p>
@@ -3879,6 +3905,59 @@
                     alert('The follows table was just created. Please:\n1. Go to Supabase Dashboard\n2. Click on "API" in the left menu\n3. Click "Reload schema cache" button\n4. Try again');
                 } else {
                     alert('Failed to update follow status: ' + (error.message || 'Unknown error'));
+                }
+            }
+        }
+
+        // Quick follow/unfollow from feed
+        async function quickFollow(userId, userName) {
+            if (!currentUser) {
+                // Save for after login
+                localStorage.setItem('pendingFollowUserId', userId);
+                localStorage.setItem('pendingFollowUserName', userName);
+                showAuthModal();
+                return;
+            }
+
+            const isFollowing = follows[currentUser.id] && follows[currentUser.id].includes(userId);
+            
+            try {
+                if (isFollowing) {
+                    // Unfollow
+                    const { error } = await supabase
+                        .from('follows')
+                        .delete()
+                        .eq('follower_id', currentUser.id)
+                        .eq('followed_id', userId);
+
+                    if (error) throw error;
+
+                    // Update local state
+                    follows[currentUser.id] = follows[currentUser.id].filter(id => id !== userId);
+                } else {
+                    // Follow
+                    const { error } = await supabase
+                        .from('follows')
+                        .insert([{
+                            follower_id: currentUser.id,
+                            followed_id: userId
+                        }]);
+
+                    if (error) throw error;
+
+                    // Update local state
+                    if (!follows[currentUser.id]) follows[currentUser.id] = [];
+                    follows[currentUser.id].push(userId);
+                }
+
+                // Refresh feed to update buttons
+                loadFeed();
+            } catch (error) {
+                console.error('Error quick following:', error);
+                if (error.code === 'PGRST204' || error.message.includes('schema cache')) {
+                    alert('The follows table was just created. Please:\n1. Go to Supabase Dashboard\n2. Click on "API" in the left menu\n3. Click "Reload schema cache" button\n4. Try again');
+                } else {
+                    alert('Failed to follow/unfollow: ' + (error.message || 'Unknown error'));
                 }
             }
         }
