@@ -2864,83 +2864,122 @@
         }
 
         async function logout() {
-            if (confirm('Are you sure you want to logout?')) {
+            if (!confirm('Are you sure you want to logout?')) {
+                return;
+            }
+            
+            console.log('Logout started...');
+            
+            try {
+                // Try to sign out from Supabase if there's a session
                 try {
-                    // Try to sign out from Supabase if there's a session
                     const { data: { session } } = await supabase.auth.getSession();
                     if (session) {
+                        console.log('Signing out from Supabase...');
                         const { error } = await supabase.auth.signOut();
                         if (error && error.message !== 'Auth session missing!') {
-                            throw error;
+                            console.warn('Supabase signout error:', error);
                         }
                     }
+                } catch (authError) {
+                    console.warn('Auth signout failed, continuing with local cleanup:', authError);
+                }
+                
+                console.log('Clearing local state...');
+                
+                // Clear local state regardless of Supabase signout
+                currentUser = null;
+                currentRoute = null;
+                currentPhotos = [];
+                pendingRoute = null;
+                
+                // Clear localStorage
+                localStorage.removeItem('pendingRoute');
+                
+                // Update UI elements
+                document.getElementById('userName').textContent = 'Traveler';
+                document.getElementById('profileAvatar').textContent = 'U';
+                document.getElementById('logoutBtn').style.display = 'none';
+                document.getElementById('clearAllBtn').style.display = 'none';
+                document.getElementById('loginBtn').style.display = 'inline-flex';
+                
+                // Clear the map
+                if (map) {
+                    console.log('Clearing map...');
+                    // Remove all markers
+                    if (map.markers && map.markers.length > 0) {
+                        map.markers.forEach(marker => {
+                            try {
+                                marker.remove();
+                            } catch (e) {
+                                console.warn('Error removing marker:', e);
+                            }
+                        });
+                        map.markers = [];
+                    }
                     
-                    // Clear local state regardless of Supabase signout
-                    currentUser = null;
-                    currentRoute = null;
-                    currentPhotos = [];
-                    pendingRoute = null;
-                    
-                    // Clear localStorage
-                    localStorage.removeItem('pendingRoute');
-                    
-                    document.getElementById('userName').textContent = 'Traveler';
-                    document.getElementById('profileAvatar').textContent = 'U';
-                    document.getElementById('logoutBtn').style.display = 'none';
-                    document.getElementById('clearAllBtn').style.display = 'none';
-                    document.getElementById('loginBtn').style.display = 'inline-flex';
-                    
-                    // Clear the map
-                    if (map) {
-                        // Remove all markers
-                        if (map.markers) {
-                            map.markers.forEach(marker => marker.remove());
-                            map.markers = [];
-                        }
-                        
-                        // Remove route layer and source
+                    // Remove route layer and source
+                    try {
                         if (map.getLayer('route')) map.removeLayer('route');
                         if (map.getSource('route')) map.removeSource('route');
-                        
-                        // Reset map view
+                    } catch (e) {
+                        console.warn('Error removing route layer:', e);
+                    }
+                    
+                    // Reset map view
+                    try {
                         map.setCenter([0, 0]);
                         map.setZoom(2);
+                    } catch (e) {
+                        console.warn('Error resetting map view:', e);
                     }
-                    
-                    // Hide map page elements
-                    document.getElementById('routeInfoTop').classList.remove('visible');
-                    document.getElementById('routeInfoBottom').style.display = 'none';
-                    document.getElementById('photoCarousel').classList.remove('visible');
-                    document.getElementById('photoPreview').innerHTML = '';
-                    document.getElementById('processBtn').style.display = 'none';
-                    document.getElementById('mapUploadBtn').style.display = 'flex';
-                    document.getElementById('closeRouteBtn').style.display = 'none';
-                    
-                    // Load public routes for feed
-                    await loadRoutesFromSupabase();
-                    
-                    // Update UI
-                    try {
-                        loadFeed();
-                        updateProfileStats();
-                    } catch (uiError) {
-                        console.error('UI update error:', uiError);
-                    }
-                    
-                    // Navigate to feed
-                    showPage('feed', document.querySelectorAll('.nav-btn')[0]);
-                    
-                    alert('Logged out successfully');
-                } catch (error) {
-                    console.error('Logout error:', error);
-                    // Even if there's an error, clear the UI
-                    currentUser = null;
-                    document.getElementById('logoutBtn').style.display = 'none';
-                    document.getElementById('clearAllBtn').style.display = 'none';
-                    document.getElementById('loginBtn').style.display = 'inline-flex';
-                    showPage('feed', document.querySelectorAll('.nav-btn')[0]);
-                    alert('Logged out (with errors): ' + error.message);
                 }
+                
+                // Hide map page elements
+                document.getElementById('routeInfoTop').classList.remove('visible');
+                document.getElementById('routeInfoBottom').style.display = 'none';
+                document.getElementById('photoCarousel').classList.remove('visible');
+                document.getElementById('photoPreview').innerHTML = '';
+                document.getElementById('processBtn').style.display = 'none';
+                document.getElementById('mapUploadBtn').style.display = 'flex';
+                document.getElementById('closeRouteBtn').style.display = 'none';
+                
+                console.log('Loading routes...');
+                
+                // Load public routes for feed
+                try {
+                    await loadRoutesFromSupabase();
+                    console.log('Routes loaded');
+                } catch (loadError) {
+                    console.error('Error loading routes:', loadError);
+                }
+                
+                // Update UI
+                console.log('Updating UI...');
+                try {
+                    loadFeed();
+                    updateProfileStats();
+                } catch (uiError) {
+                    console.error('UI update error:', uiError);
+                }
+                
+                console.log('Navigating to feed...');
+                
+                // Navigate to feed
+                showPage('feed', document.querySelectorAll('.nav-btn')[0]);
+                
+                console.log('Logout completed!');
+                alert('Logged out successfully');
+                
+            } catch (error) {
+                console.error('Logout error:', error);
+                // Even if there's an error, clear the UI
+                currentUser = null;
+                document.getElementById('logoutBtn').style.display = 'none';
+                document.getElementById('clearAllBtn').style.display = 'none';
+                document.getElementById('loginBtn').style.display = 'inline-flex';
+                showPage('feed', document.querySelectorAll('.nav-btn')[0]);
+                alert('Logged out successfully');
             }
         }
 
