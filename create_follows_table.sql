@@ -29,3 +29,8 @@ CREATE POLICY "Users can follow others" ON follows
 CREATE POLICY "Users can unfollow" ON follows
     FOR DELETE
     USING (auth.uid() = follower_id);
+
+-- IMPORTANT: After running this script, you MUST reload the schema cache:
+-- Go to: Supabase Dashboard > API (left menu) > Click "Reload schema cache"
+-- OR run this query in SQL Editor:
+-- NOTIFY pgrst, 'reload schema';

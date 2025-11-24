@@ -3815,9 +3815,11 @@
                 console.error('Error message:', error.message);
                 console.error('Error details:', JSON.stringify(error, null, 2));
                 
-                // Check if it's a table not found error
+                // Check error types
                 if (error.message && error.message.includes('relation "public.follows" does not exist')) {
                     alert('The follows feature is not yet configured in the database. Please run the SQL script: create_follows_table.sql');
+                } else if (error.code === 'PGRST204' || error.message.includes('schema cache')) {
+                    alert('The follows table was just created. Please:\n1. Go to Supabase Dashboard\n2. Click on "API" in the left menu\n3. Click "Reload schema cache" button\n4. Try again');
                 } else {
                     alert('Failed to update follow status: ' + (error.message || 'Unknown error'));
                 }
