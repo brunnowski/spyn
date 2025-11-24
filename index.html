@@ -1491,6 +1491,14 @@
                         <div class="stat-value" id="totalLikes">0</div>
                         <div class="stat-label">Likes</div>
                     </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="followersCount">0</div>
+                        <div class="stat-label">Followers</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="followingCount">0</div>
+                        <div class="stat-label">Following</div>
+                    </div>
                 </div>
                 
                 <div class="profile-actions">
@@ -1499,6 +1507,9 @@
                     </button>
                     <button onclick="showAuthModal()" class="profile-action-btn primary" style="display: none;" id="loginBtn">
                         <span>🔑</span> Login / Sign Up
+                    </button>
+                    <button onclick="toggleFollow()" class="profile-action-btn primary" style="display: none;" id="followBtn">
+                        <span id="followIcon">➕</span> <span id="followText">Follow</span>
                     </button>
                     <button onclick="clearAllRoutes()" class="profile-action-btn danger" style="display: none;" id="clearAllBtn">
                         <span>🗑️</span> Clear All Routes
@@ -1611,6 +1622,8 @@
         let pendingRoute = null;
         let routeLikes = {}; // { routeId: [userId1, userId2, ...] }
         let routeComments = {}; // { routeId: [{user, text, date}, ...] }
+        let follows = {}; // { follower_id: [followed_ids...] }
+        let currentViewingUserId = null; // Track which user profile is being viewed
 
         // Initialize
         // Close modals when clicking outside
@@ -1712,6 +1725,9 @@
             
             // Load likes and comments
             await loadLikesAndComments();
+            
+            // Load follows
+            await loadFollows();
             
             loadFeed();
             updateProfileStats();
@@ -3241,9 +3257,18 @@
             document.getElementById('totalPhotos').textContent = totalPhotos;
             document.getElementById('totalLikes').textContent = totalLikes;
             
+            // Update followers/following count for current user
+            if (currentUser) {
+                const followersCount = Object.values(follows).filter(list => list.includes(currentUser.id)).length;
+                const followingCount = follows[currentUser.id] ? follows[currentUser.id].length : 0;
+                document.getElementById('followersCount').textContent = followersCount;
+                document.getElementById('followingCount').textContent = followingCount;
+            }
+            
             clearAllBtn.style.display = 'inline-flex';
             logoutBtn.style.display = 'inline-flex';
             loginBtn.style.display = 'none';
+            document.getElementById('followBtn').style.display = 'none';
             
             if (userRoutes.length === 0) {
                 routeListSection.style.display = 'none';
@@ -3599,7 +3624,7 @@
         }
         
         // View User Profile
-        function viewUserProfile(userId, userName) {
+        async function viewUserProfile(userId, userName) {
             if (!userId) return;
             
             // Filter routes by user
@@ -3685,18 +3710,132 @@
                 });
             }
             
-            // Hide buttons for viewing other user's profile
+            // Update followers/following count
+            currentViewingUserId = userId;
+            await updateFollowersCount(userId);
+            
+            // Hide/show buttons for viewing own vs other user's profile
+            const followBtn = document.getElementById('followBtn');
+            const followText = document.getElementById('followText');
+            const followIcon = document.getElementById('followIcon');
+            
             if (currentUser && userId === currentUser.id) {
+                // Viewing own profile
                 document.getElementById('clearAllBtn').style.display = 'inline-flex';
                 document.getElementById('logoutBtn').style.display = 'inline-flex';
                 document.getElementById('loginBtn').style.display = 'none';
-            } else {
+                followBtn.style.display = 'none';
+            } else if (currentUser) {
+                // Viewing another user's profile while logged in
                 document.getElementById('clearAllBtn').style.display = 'none';
                 document.getElementById('logoutBtn').style.display = 'none';
-                document.getElementById('loginBtn').style.display = currentUser ? 'none' : 'inline-flex';
+                document.getElementById('loginBtn').style.display = 'none';
+                followBtn.style.display = 'inline-flex';
+                
+                // Check if already following
+                const isFollowing = follows[currentUser.id] && follows[currentUser.id].includes(userId);
+                followText.textContent = isFollowing ? 'Unfollow' : 'Follow';
+                followIcon.textContent = isFollowing ? '➖' : '➕';
+            } else {
+                // Not logged in - show login button
+                document.getElementById('clearAllBtn').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'none';
+                document.getElementById('loginBtn').style.display = 'inline-flex';
+                followBtn.style.display = 'none';
             }
             
             showPage('profile', document.querySelectorAll('.nav-btn')[2]);
+        }
+
+        // Follow/Unfollow System
+        async function toggleFollow() {
+            if (!currentUser) {
+                showAuthModal();
+                return;
+            }
+
+            if (!currentViewingUserId) return;
+
+            const followBtn = document.getElementById('followBtn');
+            const followText = document.getElementById('followText');
+            const followIcon = document.getElementById('followIcon');
+            const isFollowing = follows[currentUser.id] && follows[currentUser.id].includes(currentViewingUserId);
+
+            try {
+                if (isFollowing) {
+                    // Unfollow
+                    const { error } = await supabase
+                        .from('follows')
+                        .delete()
+                        .eq('follower_id', currentUser.id)
+                        .eq('followed_id', currentViewingUserId);
+
+                    if (error) throw error;
+
+                    // Update local state
+                    follows[currentUser.id] = follows[currentUser.id].filter(id => id !== currentViewingUserId);
+                    
+                    followText.textContent = 'Follow';
+                    followIcon.textContent = '➕';
+                } else {
+                    // Follow
+                    const { error } = await supabase
+                        .from('follows')
+                        .insert([{
+                            follower_id: currentUser.id,
+                            followed_id: currentViewingUserId
+                        }]);
+
+                    if (error) throw error;
+
+                    // Update local state
+                    if (!follows[currentUser.id]) follows[currentUser.id] = [];
+                    follows[currentUser.id].push(currentViewingUserId);
+                    
+                    followText.textContent = 'Unfollow';
+                    followIcon.textContent = '➖';
+                }
+
+                // Update followers count
+                await updateFollowersCount(currentViewingUserId);
+            } catch (error) {
+                console.error('Error toggling follow:', error);
+                alert('Failed to update follow status. Please try again.');
+            }
+        }
+
+        async function loadFollows() {
+            try {
+                const { data, error } = await supabase
+                    .from('follows')
+                    .select('*');
+
+                if (error) throw error;
+
+                // Build follows map
+                follows = {};
+                data.forEach(follow => {
+                    if (!follows[follow.follower_id]) {
+                        follows[follow.follower_id] = [];
+                    }
+                    follows[follow.follower_id].push(follow.followed_id);
+                });
+
+                console.log('Loaded follows:', follows);
+            } catch (error) {
+                console.error('Error loading follows:', error);
+            }
+        }
+
+        async function updateFollowersCount(userId) {
+            // Count followers (people who follow this user)
+            const followersCount = Object.values(follows).filter(list => list.includes(userId)).length;
+            
+            // Count following (people this user follows)
+            const followingCount = follows[userId] ? follows[userId].length : 0;
+
+            document.getElementById('followersCount').textContent = followersCount;
+            document.getElementById('followingCount').textContent = followingCount;
         }
 
         async function clearAllRoutes() {
