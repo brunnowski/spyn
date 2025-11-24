@@ -2972,9 +2972,13 @@
                 currentRoute = null;
                 currentPhotos = [];
                 pendingRoute = null;
+                follows = {};
+                currentViewingUserId = null;
                 
                 // Clear localStorage
                 localStorage.removeItem('pendingRoute');
+                localStorage.removeItem('pendingFollowUserId');
+                localStorage.removeItem('pendingFollowUserName');
                 
                 // Update UI elements
                 document.getElementById('userName').textContent = 'Traveler';
