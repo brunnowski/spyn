@@ -1,18 +1,18 @@
-# Terms of Service - SPYN
+# Terms of Service - STPZ
 
-**Last Updated: November 24, 2025**
+**Last Updated: November 25, 2025**
 
-## Welcome to SPYN
+## Welcome to STPZ
 
-By creating an account and using SPYN ("the Service"), you agree to be bound by these Terms of Service ("Terms"). Please read them carefully.
+By creating an account and using STPZ ("the Service"), you agree to be bound by these Terms of Service ("Terms"). Please read them carefully.
 
 ## 1. Acceptance of Terms
 
-By accessing or using SPYN, you agree to comply with and be bound by these Terms and our Privacy Policy. If you do not agree to these Terms, please do not use the Service.
+By accessing or using STPZ, you agree to comply with and be bound by these Terms and our Privacy Policy. If you do not agree to these Terms, please do not use the Service.
 
 ## 2. Description of Service
 
-SPYN is a photo journey mapping and social networking service that allows users to:
+STpz is a photo journey mapping and social networking service that allows users to:
 - Upload photos with GPS data to create route maps
 - Share routes with other users
 - Interact through likes and comments
@@ -35,7 +35,7 @@ SPYN is a photo journey mapping and social networking service that allows users 
 
 ### 4.1 Your Content
 - You retain all rights to the photos and routes you upload
-- By uploading content, you grant SPYN a worldwide, non-exclusive, royalty-free license to use, store, display, and distribute your content as necessary to provide the Service
+- By uploading content, you grant STpz a worldwide, non-exclusive, royalty-free license to use, store, display, and distribute your content as necessary to provide the Service
 - You represent that you have all necessary rights to upload and share the content
 
 ### 4.2 Content Guidelines
@@ -91,8 +91,8 @@ You agree to:
 
 ## 8. Intellectual Property
 
-### 8.1 SPYN's Rights
-- The SPYN name, logo, and design are our intellectual property
+### 8.1 STPZ's Rights
+- The STPZ name, logo, and design are our intellectual property
 - The Service's source code and functionality are protected
 - You may not copy, modify, or reverse engineer the Service
 
@@ -125,7 +125,7 @@ TO THE MAXIMUM EXTENT PERMITTED BY LAW:
 
 ## 11. Indemnification
 
-You agree to indemnify and hold harmless SPYN, its affiliates, and their respective officers, directors, employees, and agents from any claims, damages, losses, liabilities, and expenses (including legal fees) arising from:
+You agree to indemnify and hold harmless STPZ, its affiliates, and their respective officers, directors, employees, and agents from any claims, damages, losses, liabilities, and expenses (including legal fees) arising from:
 - Your use of the Service
 - Your violation of these Terms
 - Your violation of any rights of another user or third party
@@ -192,7 +192,7 @@ We encourage users to contact us first to resolve any concerns before pursuing f
 ## 18. General Provisions
 
 ### 18.1 Entire Agreement
-These Terms constitute the entire agreement between you and SPYN regarding the Service.
+These Terms constitute the entire agreement between you and STPZ regarding the Service.
 
 ### 18.2 Severability
 If any provision is found to be unenforceable, the remaining provisions will remain in effect.
@@ -218,4 +218,4 @@ BY CREATING AN ACCOUNT, YOU ACKNOWLEDGE THAT YOU HAVE READ, UNDERSTOOD, AND AGRE
 
 ---
 
-**SPYN** - Every journey tells a story 🗺️✨
+**STPZ** - Every journey tells a story 🗺️✨

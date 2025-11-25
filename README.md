@@ -1,13 +1,13 @@
-# SPYN 📍
+# STPZ 📍
 
-**SPYN Your Journey** - Transform your photo memories into interactive route maps
+**STPZ - stepsharing movement** - Transform your photo memories into interactive route maps
 
 [![GitHub Pages](https://img.shields.io/badge/demo-live-brightgreen)](https://brunnowski.github.io/hyfa/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## 🌟 About
 
-SPYN is a web application that automatically creates beautiful, interactive route maps from your photos' GPS data. Upload your journey photos, and watch as SPYN traces your path on a map, preserving every moment of your adventure.
+STpz is a web application that automatically creates beautiful, interactive route maps from your photos' GPS data. Upload your journey photos, and watch as STpz traces your path on a map, preserving every moment of your adventure.
 
 Perfect for travelers, hikers, road trippers, and anyone who wants to visualize their journeys.
 
@@ -57,7 +57,7 @@ Visit the live application: **[https://brunnowski.github.io/hyfa/](https://brunn
 
 ### Supabase Setup (Optional but Recommended)
 
-SPYN works with localStorage by default, but for a better experience with user authentication and cloud storage, set up Supabase:
+STpz works with localStorage by default, but for a better experience with user authentication and cloud storage, set up Supabase:
 
 1. **Create a Supabase account** at [supabase.com](https://supabase.com)
 
@@ -103,7 +103,7 @@ SPYN works with localStorage by default, but for a better experience with user a
 
 ## 🎨 Design
 
-SPYN features a bold **brutalist design** aesthetic:
+STpz features a bold **brutalist design** aesthetic:
 - High contrast black, white, yellow, red, and blue color scheme
 - Thick borders and prominent shadows
 - Uppercase typography
@@ -165,7 +165,7 @@ This project is licensed under the MIT License.
 
 ## 📜 Terms of Service
 
-By creating an account on SPYN, you agree to our [Terms of Service](TERMS_OF_SERVICE.md).
+By creating an account on STpz, you agree to our [Terms of Service](TERMS_OF_SERVICE.md).
 
 **Key points:**
 - You retain all rights to your photos and routes
@@ -189,5 +189,5 @@ Created by [@brunnowski](https://github.com/brunnowski)
 
 ---
 
-**SPYN** - Every journey tells a story 🗺️✨
+**STPZ** - Every journey tells a story 🗺️✨
 

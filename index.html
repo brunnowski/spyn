@@ -3,7 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPYN - Photo Journey Routes</title>
+    <title>STPZ - stepsharing movement</title>
+    
+    <!-- Open Graph Meta Tags for Social Sharing -->
+    <meta property="og:title" content="STPZ - stepsharing movement" />
+    <meta property="og:description" content="Transform your photo memories into interactive route maps. Share your journeys with the world! 📍🗺️" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://brunnowski.github.io/hyfa/" />
+    <meta property="og:image" content="https://brunnowski.github.io/hyfa/og-image.jpg" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="STPZ - stepsharing movement" />
+    <meta name="twitter:description" content="Transform your photo memories into interactive route maps. Share your journeys with the world! 📍🗺️" />
+    <meta name="twitter:image" content="https://brunnowski.github.io/hyfa/og-image.jpg" />
+    
+    <!-- General Meta Tags -->
+    <meta name="description" content="STPZ - Transform your photo memories into interactive route maps. Upload photos, trace your path, and share your adventures with the world!" />
+    <meta name="keywords" content="travel, maps, routes, photos, GPS, journey, adventure, sharing, stepsharing" />
+    <meta name="author" content="STPZ" />
     
     <!-- Maplibre GL CSS -->
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.0.0/dist/maplibre-gl.css" />
@@ -193,6 +211,12 @@
 
         .route-info.visible {
             display: block;
+        }
+
+        /* Route Creator Info */
+        #routeCreatorText:hover {
+            color: var(--brutal-black);
+            text-decoration: underline;
         }
 
         .route-info-field {
@@ -590,6 +614,13 @@
         .route-card h3 {
             margin-bottom: 15px;
             color: var(--brutal-black);
+            background: var(--brutal-yellow);
+            padding: 12px 15px;
+            border: var(--brutal-border) solid var(--brutal-black);
+            box-shadow: 4px 4px 0 var(--brutal-black);
+            text-transform: uppercase;
+            font-weight: 900;
+            letter-spacing: -0.02em;
         }
 
         .route-card p {
@@ -610,6 +641,18 @@
             border: var(--brutal-border) solid var(--brutal-black);
             box-shadow: 4px 4px 0 var(--brutal-black);
             background: #f0f0f0;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mini-map:not([data-loaded])::before {
+            content: '🗺️ Loading map...';
+            font-weight: 900;
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #666;
         }
 
         @media (min-width: 768px) {
@@ -697,13 +740,16 @@
         .action-btn.following {
             background: var(--brutal-black) !important;
             color: var(--brutal-white) !important;
-            transform: translate(1px, 1px) !important;
-            box-shadow: 2px 2px 0 var(--brutal-black) !important;
         }
 
         .action-btn.following:hover {
-            transform: translate(0px, 0px) !important;
-            box-shadow: 3px 3px 0 var(--brutal-black) !important;
+            transform: translate(-2px, -2px) !important;
+            box-shadow: 5px 5px 0 var(--brutal-black) !important;
+        }
+        
+        .action-btn.following:active {
+            transform: translate(1px, 1px) !important;
+            box-shadow: 2px 2px 0 var(--brutal-black) !important;
         }
 
         /* Comments Section */
@@ -887,13 +933,16 @@
         .profile-action-btn.primary.following {
             background: var(--brutal-black) !important;
             color: var(--brutal-white) !important;
-            transform: translate(2px, 2px) !important;
-            box-shadow: 2px 2px 0 var(--brutal-black) !important;
         }
 
         .profile-action-btn.primary.following:hover {
-            transform: translate(0px, 0px) !important;
-            box-shadow: 4px 4px 0 var(--brutal-black) !important;
+            transform: translate(-2px, -2px) !important;
+            box-shadow: 6px 6px 0 var(--brutal-black) !important;
+        }
+        
+        .profile-action-btn.primary.following:active {
+            transform: translate(2px, 2px) !important;
+            box-shadow: 2px 2px 0 var(--brutal-black) !important;
         }
 
         .profile-action-btn.danger {
@@ -1038,6 +1087,28 @@
         .close-modal:hover {
             transform: translate(-2px, -2px);
             box-shadow: 6px 6px 0 var(--brutal-black);
+        }
+
+        .social-share-btn {
+            padding: 10px 16px;
+            border: 3px solid var(--brutal-black);
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 var(--brutal-black);
+            transition: all 0.1s ease;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .social-share-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0 var(--brutal-black);
+        }
+
+        .social-share-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 var(--brutal-black);
         }
 
         /* Auth Modal */
@@ -1423,7 +1494,7 @@
     <!-- Start/CTA Landing Page -->
     <div id="startPage" class="page active" style="padding-top: 0;">
         <div class="welcome-section cta-landing">
-            <h1>SPYN Your Journey</h1>
+            <h1>STPZ</h1>
             <p>Upload photos with GPS data to generate your route</p>
             <button class="upload-btn" onclick="document.getElementById('photoInput').click()">
                 Upload Photos
@@ -1434,13 +1505,14 @@
 
     <!-- Feed Page -->
     <div id="feedPage" class="page">
-        <div class="container">
+        <div class="container" id="feedContainer">
             <h1 style="margin-bottom: 20px;">Route Feed</h1>
             
             <!-- Feed Filters -->
             <div style="margin-bottom: 25px; padding: 20px; background: #FFFFFF; border: 4px solid #000000; box-shadow: 6px 6px 0 #000000;">
                 <label style="display: block; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; font-size: 0.875rem;">Sort By:</label>
                 <select id="feedFilter" onchange="applyFeedFilter()" style="width: 100%; padding: 12px 15px; font-family: inherit; font-weight: 700; font-size: 1rem; border: 3px solid #000000; background: #FFFFFF; cursor: pointer; text-transform: uppercase;">
+                    <option value="views">📊 Most Viewed</option>
                     <option value="recent">📅 Most Recent</option>
                     <option value="oldest">⏰ Oldest First</option>
                     <option value="likes">❤️ Most Liked</option>
@@ -1470,6 +1542,9 @@
             <button id="processBtn" class="process-btn" style="display: none; width: 100%;" onclick="processPhotos()">
                 Generate Route
             </button>
+            <div id="routeCreatorInfo" style="display: none; margin-bottom: 20px;">
+                <p id="routeCreatorText" style="font-weight: 900; text-transform: uppercase; font-size: 1.25rem; color: var(--brutal-blue); cursor: pointer; margin: 0; transition: color 0.2s;"></p>
+            </div>
             <div class="map-container">
                 <div id="map" style="margin-top: 20px;"></div>
                 <button id="mapUploadBtn" class="map-upload-overlay" onclick="document.getElementById('photoInput').click()" title="Upload More Photos">+</button>
@@ -1492,12 +1567,12 @@
 
     <!-- Profile Page -->
     <div id="profilePage" class="page">
-        <div class="container">
+        <div class="container" id="profileContainer">
             <div class="profile-header">
                 <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
                     <div id="profileAvatar" class="profile-avatar" style="margin: 0;">U</div>
                     <div style="flex: 1;">
-                        <h2 id="userName" style="margin-bottom: 8px;">Traveler</h2>
+                        <h2 id="userName" style="margin-bottom: 8px; background: var(--brutal-yellow); padding: 12px 15px; border: 4px solid var(--brutal-black); box-shadow: 4px 4px 0 var(--brutal-black); text-transform: uppercase; font-weight: 900; letter-spacing: -0.02em;">Traveler</h2>
                         <p id="routeCount" style="font-weight: 700; text-transform: uppercase; font-size: 0.875rem;">0 routes created</p>
                     </div>
                 </div>
@@ -1514,6 +1589,10 @@
                     <div class="stat-item">
                         <div class="stat-value" id="totalLikes">0</div>
                         <div class="stat-label">Likes</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalViews">0</div>
+                        <div class="stat-label">Views</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value" id="followersCount">0</div>
@@ -1551,9 +1630,32 @@
     <!-- Share Modal -->
     <div id="shareModal" class="modal">
         <div class="modal-content">
-            <h3>Share Route</h3>
-            <input type="text" id="shareLink" readonly>
-            <button class="upload-btn" onclick="copyShareLink()">Copy Link</button>
+            <h3 style="margin-bottom: 10px;">📤 Share Route</h3>
+            <p style="margin-bottom: 20px; font-size: 14px; font-weight: 600; color: #666;">Share this unique link with anyone!</p>
+            
+            <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+                <input type="text" id="shareLink" readonly style="flex: 1;">
+                <button class="upload-btn" onclick="copyShareLink()" style="padding: 12px 20px; white-space: nowrap;">📋 Copy</button>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <p style="font-weight: 700; margin-bottom: 10px; font-size: 14px;">Share on:</p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button onclick="shareOnWhatsApp()" class="social-share-btn" style="background: #25D366; color: white;">
+                        📱 WhatsApp
+                    </button>
+                    <button onclick="shareOnTwitter()" class="social-share-btn" style="background: #1DA1F2; color: white;">
+                        🐦 Twitter
+                    </button>
+                    <button onclick="shareOnFacebook()" class="social-share-btn" style="background: #1877F2; color: white;">
+                        👤 Facebook
+                    </button>
+                    <button onclick="shareOnTelegram()" class="social-share-btn" style="background: #0088cc; color: white;">
+                        ✈️ Telegram
+                    </button>
+                </div>
+            </div>
+            
             <button class="close-modal" onclick="closeShareModal()">Close</button>
         </div>
     </div>
@@ -1614,6 +1716,9 @@
         <div class="photo-viewer-content">
             <img id="viewerImage" src="" alt="Photo">
             <button class="photo-close" onclick="closePhotoViewer()">×</button>
+            <button id="viewerMapsBtn" onclick="openCurrentPhotoInMaps()" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 16px; background: var(--brutal-blue); color: white; border: 4px solid black; font-weight: 900; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 6px 6px 0 black; width: 60px; height: 60px; z-index: 1000;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 0c-4.198 0-8 3.403-8 7.602 0 4.198 3.469 9.21 8 16.398 4.531-7.188 8-12.2 8-16.398 0-4.199-3.801-7.602-8-7.602zm0 11c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3z"/></svg>
+            </button>
         </div>
         <div class="photo-viewer-bottom">
             <div class="photo-info" id="photoInfo"></div>
@@ -1646,6 +1751,7 @@
         let pendingRoute = null;
         let routeLikes = {}; // { routeId: [userId1, userId2, ...] }
         let routeComments = {}; // { routeId: [{user, text, date}, ...] }
+        let routeViews = {}; // { routeId: viewCount }
         let follows = {}; // { follower_id: [following_ids...] }
         let currentViewingUserId = null; // Track which user profile is being viewed
 
@@ -1670,16 +1776,55 @@
         document.addEventListener('DOMContentLoaded', async function() {
             initMap();
             
-            // Check if this is the first visit
-            const hasVisited = localStorage.getItem('hasVisited');
-            if (hasVisited) {
-                // Not first visit - go to Feed page and show navigation
+            // Check if there's a shared route in URL - PRIORITY #1
+            const urlParams = new URLSearchParams(window.location.search);
+            const sharedRouteId = urlParams.get('route');
+            
+            if (sharedRouteId) {
+                // Shared route detected - show loading spinner on map
+                console.log('Shared route detected, going directly to map:', sharedRouteId);
                 document.getElementById('mainNav').style.display = 'block';
-                showPage('feed', document.querySelectorAll('.nav-btn')[0]);
+                
+                // Show map page with loading overlay
+                showPage('map', null);
+                
+                // Create and show loading overlay
+                const mapContainer = document.getElementById('map');
+                const loadingOverlay = document.createElement('div');
+                loadingOverlay.id = 'routeLoadingOverlay';
+                loadingOverlay.style.cssText = `
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: var(--brutal-white);
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1000;
+                    font-weight: 900;
+                `;
+                loadingOverlay.innerHTML = `
+                    <div style="font-size: 60px; margin-bottom: 20px;">🗺️</div>
+                    <div style="font-size: 24px; color: var(--brutal-black);">Loading Route...</div>
+                `;
+                mapContainer.appendChild(loadingOverlay);
+                
+                // Route will be loaded below
             } else {
-                // First visit - hide navigation until photos are uploaded
-                document.getElementById('mainNav').style.display = 'none';
-                // Mark as visited will be done after first upload
+                // Normal flow - check if this is the first visit
+                const hasVisited = localStorage.getItem('hasVisited');
+                if (hasVisited) {
+                    // Not first visit - go to Feed page and show navigation
+                    document.getElementById('mainNav').style.display = 'block';
+                    showPage('feed', document.querySelectorAll('.nav-btn')[0]);
+                } else {
+                    // First visit - hide navigation until photos are uploaded
+                    document.getElementById('mainNav').style.display = 'none';
+                    // Mark as visited will be done after first upload
+                }
             }
             
             // Check for existing Supabase session
@@ -1755,26 +1900,48 @@
                 }
             });
             
-            // Load routes from Supabase
-            await loadRoutesFromSupabase();
-            
-            // Load likes and comments
-            await loadLikesAndComments();
-            
-            // Load follows
-            await loadFollows();
-            
-            loadFeed();
-            updateProfileStats();
-            
-            // Check localStorage status
-            checkStorageStatus();
-            
-            // Check if there's a shared route in URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const sharedRouteId = urlParams.get('route');
+            // Load data based on whether there's a shared route or not
             if (sharedRouteId) {
-                viewSharedRoute(sharedRouteId);
+                console.log('Shared route detected in URL:', sharedRouteId);
+                console.log('Loading shared route BEFORE everything else...');
+                
+                // Load ONLY the shared route first
+                await loadRoutesFromSupabase();
+                console.log('Routes loaded, total:', routes.length);
+                
+                // Display the shared route immediately
+                await viewSharedRoute(sharedRouteId);
+                
+                // Then load everything else in background
+                setTimeout(async () => {
+                    await loadLikesAndComments();
+                    await loadFollows();
+                    loadFeed();
+                    updateProfileStats();
+                    checkStorageStatus();
+                }, 100);
+            } else {
+                // Normal flow - no shared route
+                // Show loading state
+                const feedContent = document.getElementById('feedContent');
+                if (feedContent) {
+                    feedContent.innerHTML = '<div class="loading">⏳ Loading routes...</div>';
+                }
+                
+                // Load routes from Supabase
+                await loadRoutesFromSupabase();
+                
+                // Load likes and comments
+                await loadLikesAndComments();
+                
+                // Load follows
+                await loadFollows();
+                
+                loadFeed();
+                updateProfileStats();
+                
+                // Check localStorage status
+                checkStorageStatus();
             }
 
             // Photo input handler
@@ -1885,11 +2052,40 @@
                 else if (pageName === 'profile') buttons[2].classList.add('active');
             }
 
-            // Reset profile page to own profile when clicking profile button
+            // Reset profile page to own profile when clicking profile button from navigation
             if (pageName === 'profile') {
-                currentViewingUserId = null;
-                updateProfileStats();
+                // Se clickedButton existe, usuário clicou no nav button = voltar ao próprio perfil
+                // Se não existe, foi chamado programaticamente (como de viewUserProfile)
+                if (clickedButton) {
+                    const wasViewingOtherUser = currentViewingUserId !== null;
+                    currentViewingUserId = null;
+                    
+                    // Esconder botão de follow quando voltar ao próprio perfil
+                    const followBtn = document.getElementById('followBtn');
+                    if (followBtn) {
+                        followBtn.style.display = 'none';
+                    }
+                    
+                    // Forçar reload completo do perfil próprio (inclui nome/avatar)
+                    updateProfileStats();
+                    
+                    // Se estava vendo outro perfil, recarregar contadores
+                    if (wasViewingOtherUser && currentUser) {
+                        const followersCount = Object.values(follows).filter(list => list.includes(currentUser.id)).length;
+                        const followingCount = follows[currentUser.id] ? follows[currentUser.id].length : 0;
+                        document.getElementById('followersCount').textContent = followersCount;
+                        document.getElementById('followingCount').textContent = followingCount;
+                    }
+                } else if (!currentViewingUserId) {
+                    // Chamada programática sem estar vendo outro usuário
+                    updateProfileStats();
+                }
             }
+            
+            // Scroll to top when changing pages (after a small delay to ensure page is rendered)
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 50);
 
             if (pageName === 'map' && map) {
                 setTimeout(() => map.resize(), 100);
@@ -2239,22 +2435,40 @@
                     `<div style="width: 60px; height: 60px; background: #007bff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border: 3px solid #000;">${index + 1}</div>`;
                 
                 el.innerHTML = iconHtml;
-                el.onclick = () => openPhotoViewer(index);
                 
-                // Create popup content
-                const popupContent = `
-                    <div style="text-align: center; min-width: 150px;">
-                        <strong>Point ${index + 1}</strong><br>
-                        ${new Date(wp.timestamp).toLocaleString()}<br>
-                        ${wp.filename ? `<small>${wp.filename}</small><br>` : ''}
-                        ${wp.photo ? `<button onclick="openPhotoViewer(${index})" style="margin-top: 10px; padding: 5px 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">View Photo</button>` : ''}
+                // Create popup content with navigation
+                const totalPoints = route.waypoints.length;
+                const googleMapsUrl = `https://www.google.com/maps?q=${wp.lat},${wp.lng}`;
+                const pinSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 0c-4.198 0-8 3.403-8 7.602 0 4.198 3.469 9.21 8 16.398 4.531-7.188 8-12.2 8-16.398 0-4.199-3.801-7.602-8-7.602zm0 11c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3z"/></svg>';
+                
+                const createPopupContent = (idx) => `
+                    <div style="text-align: center; min-width: 180px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <button onclick="navigatePopup(${idx}, -1)" style="padding: 8px 12px; background: var(--brutal-black); color: white; border: 2px solid black; font-weight: 900; cursor: pointer; font-size: 18px;">←</button>
+                            <strong>Point ${idx + 1} of ${totalPoints}</strong>
+                            <button onclick="navigatePopup(${idx}, 1)" style="padding: 8px 12px; background: var(--brutal-black); color: white; border: 2px solid black; font-weight: 900; cursor: pointer; font-size: 18px;">→</button>
+                        </div>
+                        ${new Date(route.waypoints[idx].timestamp).toLocaleString()}<br>
+                        ${route.waypoints[idx].filename ? `<small>${route.waypoints[idx].filename}</small><br>` : ''}
+                        <button onclick="window.open('https://www.google.com/maps?q=${route.waypoints[idx].lat},${route.waypoints[idx].lng}', '_blank')" style="margin-top: 10px; padding: 12px; background: var(--brutal-blue); color: white; border: 3px solid black; font-weight: 900; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 3px 3px 0 black; width: 48px; height: 48px;">
+                            ${pinSvg}
+                        </button>
                     </div>
                 `;
+                
+                // Create popup with dynamic content
+                const popup = new maplibregl.Popup({offset: 25});
+                popup.setHTML(createPopupContent(index));
+                
+                // Store popup update function
+                popup._updateContent = (newIndex) => {
+                    popup.setHTML(createPopupContent(newIndex));
+                };
                 
                 // Create and add marker
                 const marker = new maplibregl.Marker({element: el})
                     .setLngLat([wp.lng, wp.lat])
-                    .setPopup(new maplibregl.Popup({offset: 25}).setHTML(popupContent))
+                    .setPopup(popup)
                     .addTo(map);
                 
                 map.markers.push(marker);
@@ -2319,6 +2533,23 @@
             document.getElementById('mapUploadBtn').style.display = 'none';
             document.getElementById('closeRouteBtn').style.display = 'flex';
             
+            // Show creator info at the top if available
+            const routeCreatorInfo = document.getElementById('routeCreatorInfo');
+            const routeCreatorText = document.getElementById('routeCreatorText');
+            if (route.user_name) {
+                routeCreatorText.textContent = `by: ${route.user_name}`;
+                if (route.user_id) {
+                    routeCreatorText.style.cursor = 'pointer';
+                    routeCreatorText.onclick = () => viewUserProfile(route.user_id, route.user_name);
+                } else {
+                    routeCreatorText.style.cursor = 'default';
+                    routeCreatorText.onclick = null;
+                }
+                routeCreatorInfo.style.display = 'block';
+            } else {
+                routeCreatorInfo.style.display = 'none';
+            }
+            
             // Show and populate bottom route info (for viewing)
             const routeInfoBottom = document.getElementById('routeInfoBottom');
             
@@ -2344,7 +2575,7 @@
                 actionsHTML = '<div id="routeInfoActions" class="route-info-actions" style="display: none;"></div>';
             }
             
-            // Reconstruir o HTML completo
+            // Reconstruir o HTML completo (sem o creatorInfo, que agora está no topo)
             routeInfoBottom.innerHTML = `
                 <h3 style="margin-bottom: 15px;" id="routeNameDisplay">${route.name || ''}</h3>
                 <p style="font-weight: 500; line-height: 1.6; margin-bottom: 15px; ${route.description ? '' : 'display: none;'}" id="routeDescriptionDisplay">${route.description || ''}</p>
@@ -2366,12 +2597,18 @@
 
             try {
                 const response = await fetch(url);
+                if (!response.ok) {
+                    console.warn('OSRM response not OK:', response.status);
+                    return null;
+                }
                 const data = await response.json();
 
                 if (data.code === 'Ok' && data.routes && data.routes[0]) {
-                    // Convert GeoJSON coordinates to Leaflet format [lat, lng]
+                    // Convert GeoJSON coordinates [lng, lat] to [lat, lng]
                     const routeCoords = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
                     return routeCoords;
+                } else {
+                    console.warn('OSRM returned no route:', data.code);
                 }
             } catch (error) {
                 console.error('OSRM routing error:', error);
@@ -2381,15 +2618,19 @@
         }
 
         // Load Feed - Shows ALL public routes from all users
-        function loadFeed(filterType = 'recent') {
+        function loadFeed(filterType = 'recent', startIndex = 0) {
             const feedContent = document.getElementById('feedContent');
+            const BATCH_SIZE = 10; // Load 10 routes at a time
             
             if (routes.length === 0) {
                 feedContent.innerHTML = '<div class="welcome-section"><p>No routes yet. Create your first journey!</p></div>';
                 return;
             }
 
-            feedContent.innerHTML = '';
+            // Clear only on first load
+            if (startIndex === 0) {
+                feedContent.innerHTML = '';
+            }
             
             // Sort routes based on filter type
             let sortedRoutes = [...routes];
@@ -2422,11 +2663,23 @@
                         return bPhotos - aPhotos;
                     });
                     break;
+                case 'views':
+                    sortedRoutes.sort((a, b) => {
+                        const aViews = routeViews[a.id] || 0;
+                        const bViews = routeViews[b.id] || 0;
+                        return bViews - aViews;
+                    });
+                    break;
                 default:
                     sortedRoutes.sort((a, b) => new Date(b.created) - new Date(a.created));
             }
+            
+            // Slice routes for batch loading
+            const endIndex = startIndex + BATCH_SIZE;
+            const routesToShow = sortedRoutes.slice(startIndex, endIndex);
+            const hasMore = endIndex < sortedRoutes.length;
 
-            sortedRoutes.forEach((route, index) => {
+            routesToShow.forEach((route, index) => {
                 const card = document.createElement('div');
                 card.className = 'route-card';
                 const photoCount = route.photo_count || route.photoCount || route.waypoints.length;
@@ -2451,25 +2704,44 @@
                 const isFollowingCreator = currentUser && userId && follows[currentUser.id] && follows[currentUser.id].includes(userId);
                 const isOwnRoute = currentUser && userId === currentUser.id;
                 
+                // Construir o botão de follow separadamente
+                let followButtonHTML = '';
+                if (userId && !isOwnRoute) {
+                    if (currentUser) {
+                        // Usuário logado - mostrar botão funcional
+                        followButtonHTML = `
+                            <button class="action-btn ${isFollowingCreator ? 'following' : ''}" 
+                                    onclick="event.stopPropagation(); quickFollow('${userId}', '${createdBy.replace(/'/g, "\\'")}')"
+                                    id="follow-btn-${userId}"
+                                    style="padding: 4px 12px; font-size: 11px; margin: 0;">
+                                ${isFollowingCreator ? '✓ Following' : '+ Follow'}
+                            </button>
+                        `;
+                    } else {
+                        // Usuário não logado - mostrar botão que pede login
+                        followButtonHTML = `
+                            <button class="action-btn" 
+                                    onclick="event.stopPropagation(); localStorage.setItem('pendingFollowUserId', '${userId}'); localStorage.setItem('pendingFollowUserName', '${createdBy.replace(/'/g, "\\'")}'); showAuthModal();"
+                                    id="follow-btn-${userId}"
+                                    style="padding: 4px 12px; font-size: 11px; margin: 0;">
+                                + Follow
+                            </button>
+                        `;
+                    }
+                }
+                
                 card.innerHTML = `
                     <h3>${route.name}</h3>
                     ${route.description ? `<p style="font-weight: 500; margin-bottom: 12px;">${route.description}</p>` : ''}
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                         <p style="font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; color: #666; margin: 0;">
                             <strong>BY:</strong> 
-                            ${userId ? `<span class="user-link" onclick="viewUserProfile('${userId}', '${createdBy.replace(/'/g, "\\'")}'); event.stopPropagation();">${createdBy}</span>` : createdBy}
+                            ${userId ? `<span class="user-link" onclick="event.stopPropagation(); viewUserProfile('${userId}', '${createdBy.replace(/'/g, "\\'")}')">${createdBy}</span>` : createdBy}
                         </p>
-                        ${userId && !isOwnRoute ? `
-                            <button class="action-btn ${isFollowingCreator ? 'following' : ''}" 
-                                    onclick="quickFollow('${userId}', '${createdBy.replace(/'/g, "\\'")}'); event.stopPropagation();"
-                                    id="follow-btn-${userId}"
-                                    style="padding: 4px 12px; font-size: 11px; margin: 0;">
-                                ${isFollowingCreator ? '✓ Following' : '+ Follow'}
-                            </button>
-                        ` : ''}
+                        ${followButtonHTML}
                     </div>
                     <p><strong>PHOTOS:</strong> ${photoCount}</p>
-                    <p><strong>SPOTS:</strong> ${route.waypoints.length}</p>
+                    <p><strong>STPZ:</strong> ${route.waypoints.length}</p>
                     <p><strong>CREATED:</strong> ${new Date(route.created).toLocaleDateString()}</p>
                     <div class="mini-map" id="mini-${route.id}"></div>
                     
@@ -2480,7 +2752,7 @@
                         <button class="action-btn" onclick="toggleComments('${route.id}'); event.stopPropagation();">
                             💬 ${comments.length} ${comments.length === 1 ? 'Comment' : 'Comments'}
                         </button>
-                        <button class="share-btn" onclick="shareRoute('${route.id}'); event.stopPropagation();" style="margin: 0;">Share</button>
+                        <button class="share-btn" onclick="shareRoute('${route.id}'); event.stopPropagation();" style="margin: 0;">🔗 Share</button>
                     </div>
                     
                     <div class="comments-section" id="comments-${route.id}">
@@ -2520,9 +2792,53 @@
                 };
                 feedContent.appendChild(card);
 
-                // Create mini map immediately
-                createMiniMap(route);
+                // Don't create mini map immediately - use lazy loading instead
             });
+            
+            // Add "Load More" button if there are more routes
+            if (hasMore) {
+                const loadMoreBtn = document.createElement('button');
+                loadMoreBtn.className = 'upload-btn';
+                loadMoreBtn.textContent = `Load More Routes (${sortedRoutes.length - endIndex} remaining)`;
+                loadMoreBtn.style.width = '100%';
+                loadMoreBtn.style.marginTop = '20px';
+                loadMoreBtn.onclick = () => {
+                    loadMoreBtn.remove();
+                    loadFeed(filterType, endIndex);
+                };
+                feedContent.appendChild(loadMoreBtn);
+            }
+            
+            // Setup Intersection Observer for lazy loading maps
+            setupLazyMaps();
+        }
+
+        // Lazy loading setup for mini maps
+        function setupLazyMaps() {
+            const miniMaps = document.querySelectorAll('.mini-map:not([data-loaded])');
+            
+            if (!window.mapObserver) {
+                window.mapObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const mapEl = entry.target;
+                            const routeId = mapEl.id.replace('mini-', '');
+                            const route = routes.find(r => r.id === routeId);
+                            
+                            if (route && !mapEl.dataset.loaded) {
+                                mapEl.dataset.loaded = 'loading';
+                                createMiniMap(route);
+                                window.mapObserver.unobserve(mapEl);
+                            }
+                        }
+                    });
+                }, {
+                    rootMargin: '200px', // Start loading 200px before visible
+                    threshold: 0.01
+                });
+            }
+            
+            miniMaps.forEach(map => window.mapObserver.observe(map));
         }
 
         // Create Mini Map for Route Card
@@ -2543,10 +2859,11 @@
             }
 
             // Check if map already exists (prevent duplicate initialization)
-            if (miniMapEl._miniMapInitialized) {
-                console.warn('Map already initialized for route:', route.id);
+            if (miniMapEl._miniMapInitialized || miniMapEl.dataset.loaded === 'true') {
                 return;
             }
+            
+            miniMapEl.dataset.loaded = 'true';
 
             try {
                 const miniMap = new maplibregl.Map({
@@ -2577,7 +2894,7 @@
 
                 miniMapEl._miniMapInitialized = true;
                 
-                miniMap.on('load', async () => {
+                miniMap.on('load', () => {
                     const latlngs = route.waypoints.map(wp => [wp.lat, wp.lng]);
                     
                     // Adicionar marcadores de início e fim
@@ -2611,7 +2928,8 @@
                         }
                     }
                     
-                    // Use direct waypoints for mini-maps (skip OSRM for faster loading)
+                    // Simplified routing - just draw straight lines between points (no OSRM call)
+                    // This is much faster for mini-maps in feed
                     const routeCoords = latlngs.map(coord => [coord[1], coord[0]]);
                     
                     // Add route line (only if we have multiple points)
@@ -2664,6 +2982,11 @@
         function viewRoute(routeId) {
             const route = routes.find(r => r.id === routeId);
             if (route) {
+                // Increment view count
+                routeViews[routeId] = (routeViews[routeId] || 0) + 1;
+                // Save to Supabase
+                incrementRouteView(routeId);
+                
                 displayRoute(route);
                 showPage('map', document.querySelectorAll('.nav-btn')[1]);
             }
@@ -2690,6 +3013,7 @@
             
             // Hide route info and carousel
             document.getElementById('routeInfoBottom').style.display = 'none';
+            document.getElementById('routeCreatorInfo').style.display = 'none';
             document.getElementById('photoCarousel').classList.remove('visible');
             
             // Show + button and hide X button
@@ -2710,11 +3034,52 @@
         }
 
         // View Shared Route
-        function viewSharedRoute(routeId) {
-            const route = routes.find(r => r.id === routeId);
-            if (route) {
-                displayRoute(route);
-                showPage('map', null);
+        async function viewSharedRoute(routeId) {
+            console.log('viewSharedRoute called with ID:', routeId);
+            
+            try {
+                // First try to find in local routes
+                let route = routes.find(r => r.id === routeId);
+                console.log('Route found locally?', !!route);
+                
+                // If not found locally, fetch from Supabase
+                if (!route) {
+                    console.log('Fetching route from Supabase...');
+                    const { data, error } = await supabase
+                        .from('routes')
+                        .select('*')
+                        .eq('id', routeId)
+                        .single();
+                    
+                    if (error) throw error;
+                    
+                    if (data) {
+                        console.log('Route loaded from Supabase:', data);
+                        route = data;
+                        // Add to routes array if not already there
+                        if (!routes.find(r => r.id === route.id)) {
+                            routes.push(route);
+                        }
+                    }
+                }
+                
+                if (route) {
+                    console.log('Displaying route on map...');
+                    await displayRoute(route);
+                    console.log('Shared route loaded successfully!');
+                } else {
+                    console.error('Route not found after all attempts');
+                    alert('Route not found.');
+                }
+            } catch (error) {
+                console.error('Error loading shared route:', error);
+                alert('Could not load shared route. It may have been deleted.');
+            } finally {
+                // Remove loading overlay
+                const overlay = document.getElementById('routeLoadingOverlay');
+                if (overlay) {
+                    overlay.remove();
+                }
             }
         }
 
@@ -2722,8 +3087,39 @@
         function copyShareLink() {
             const input = document.getElementById('shareLink');
             input.select();
-            document.execCommand('copy');
-            alert('Link copied to clipboard!');
+            navigator.clipboard.writeText(input.value).then(() => {
+                alert('✅ Link copied to clipboard!');
+            }).catch(() => {
+                document.execCommand('copy');
+                alert('✅ Link copied to clipboard!');
+            });
+        }
+
+        // Share on WhatsApp
+        function shareOnWhatsApp() {
+            const link = document.getElementById('shareLink').value;
+            const text = encodeURIComponent('Check out this amazing route on STPZ! 📍🗺️');
+            window.open(`https://wa.me/?text=${text}%20${encodeURIComponent(link)}`, '_blank');
+        }
+
+        // Share on Twitter
+        function shareOnTwitter() {
+            const link = document.getElementById('shareLink').value;
+            const text = encodeURIComponent('Check out this amazing route on STPZ! 📍🗺️');
+            window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(link)}`, '_blank');
+        }
+
+        // Share on Facebook
+        function shareOnFacebook() {
+            const link = document.getElementById('shareLink').value;
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`, '_blank');
+        }
+
+        // Share on Telegram
+        function shareOnTelegram() {
+            const link = document.getElementById('shareLink').value;
+            const text = encodeURIComponent('Check out this amazing route on STPZ! 📍🗺️');
+            window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${text}`, '_blank');
         }
 
         // Close Share Modal
@@ -3188,12 +3584,19 @@
             
             const profileRoutes = document.getElementById('profileRoutes');
             
+            // Se está visualizando perfil de outro usuário, não fazer nada aqui
+            // A função viewUserProfile já configurou tudo corretamente
+            if (currentViewingUserId && currentUser && currentViewingUserId !== currentUser.id) {
+                return;
+            }
+            
             // Se não está logado, mostrar perfil vazio
             if (!currentUser) {
                 document.getElementById('routeCount').textContent = '0 routes created';
                 document.getElementById('totalDistance').textContent = '0 km';
                 document.getElementById('totalPhotos').textContent = '0';
                 document.getElementById('totalLikes').textContent = '0';
+                document.getElementById('totalViews').textContent = '0';
                 
                 routeListSection.style.display = 'none';
                 clearAllBtn.style.display = 'none';
@@ -3210,7 +3613,11 @@
                 return;
             }
             
-            // Usuário logado - mostrar apenas suas rotas
+            // Usuário logado - mostrar apenas suas rotas (próprio perfil)
+            // Atualizar nome e avatar para o usuário logado
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('profileAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+            
             const userRoutes = routes.filter(r => r.user_id === currentUser.id);
             document.getElementById('routeCount').textContent = `${userRoutes.length} route${userRoutes.length !== 1 ? 's' : ''} created`;
             
@@ -3219,6 +3626,10 @@
             const totalLikes = userRoutes.reduce((sum, r) => {
                 const likes = routeLikes[r.id] || [];
                 return sum + likes.length;
+            }, 0);
+            const totalViews = userRoutes.reduce((sum, r) => {
+                const views = routeViews[r.id] || 0;
+                return sum + views;
             }, 0);
             
             // Calculate approximate distance (simplified)
@@ -3236,6 +3647,7 @@
             document.getElementById('totalDistance').textContent = `${Math.round(totalDistance)} km`;
             document.getElementById('totalPhotos').textContent = totalPhotos;
             document.getElementById('totalLikes').textContent = totalLikes;
+            document.getElementById('totalViews').textContent = totalViews;
             
             // Update followers/following count for current user
             if (currentUser) {
@@ -3245,6 +3657,7 @@
                 document.getElementById('followingCount').textContent = followingCount;
             }
             
+            // Vendo próprio perfil - mostrar botões apropriados
             clearAllBtn.style.display = 'inline-flex';
             logoutBtn.style.display = 'inline-flex';
             loginBtn.style.display = 'none';
@@ -3281,7 +3694,7 @@
                             <strong>${route.name}</strong>
                             ${route.description ? `<p style="font-weight: 500; margin: 8px 0; color: #333;">${route.description}</p>` : ''}
                             <div class="route-item-meta">
-                                <span>📍 ${route.waypoints.length} spots</span>
+                                <span>📍 ${route.waypoints.length} stpz</span>
                                 <span>📸 ${photoCount} photos</span>
                                 <span>❤️ ${likes.length} likes</span>
                                 <span>💬 ${comments.length} comments</span>
@@ -3365,6 +3778,16 @@
             }
         }
 
+        function openCurrentPhotoInMaps() {
+            if (!currentRoute || currentPhotoIndex === null) return;
+            
+            const waypoint = currentRoute.waypoints[currentPhotoIndex];
+            if (waypoint && waypoint.lat && waypoint.lng) {
+                const googleMapsUrl = `https://www.google.com/maps?q=${waypoint.lat},${waypoint.lng}`;
+                window.open(googleMapsUrl, '_blank');
+            }
+        }
+
         function handleTouchStart(e) {
             touchStartX = e.changedTouches[0].screenX;
         }
@@ -3396,6 +3819,32 @@
             // Remove touch event listeners
             viewer.removeEventListener('touchstart', handleTouchStart);
             viewer.removeEventListener('touchend', handleTouchEnd);
+        }
+
+        // Navigate between popups in map markers
+        function navigatePopup(currentIndex, direction) {
+            if (!map || !map.markers || !currentRoute) return;
+            
+            // Calculate new index with loop
+            const newIndex = (currentIndex + direction + currentRoute.waypoints.length) % currentRoute.waypoints.length;
+            
+            // Close current popup and open new one
+            map.markers.forEach(marker => {
+                const popup = marker.getPopup();
+                if (popup && popup.isOpen()) {
+                    popup.remove();
+                }
+            });
+            
+            // Open popup at new index
+            const newMarker = map.markers[newIndex];
+            if (newMarker) {
+                const popup = newMarker.getPopup();
+                if (popup && popup._updateContent) {
+                    popup._updateContent(newIndex);
+                }
+                newMarker.togglePopup();
+            }
         }
 
         function navigatePhoto(direction) {
@@ -3486,7 +3935,13 @@
         function applyFeedFilter() {
             const filterSelect = document.getElementById('feedFilter');
             const filterType = filterSelect.value;
-            loadFeed(filterType);
+            
+            // Show loading indicator
+            const feedContent = document.getElementById('feedContent');
+            feedContent.innerHTML = '<div class="loading">Loading routes...</div>';
+            
+            // Load feed with small delay to show loading state
+            setTimeout(() => loadFeed(filterType, 0), 50);
         }
         
         function toggleComments(routeId) {
@@ -3577,6 +4032,19 @@
                     
                     console.log('Loaded likes from Supabase:', likes.length, 'total likes');
                     
+                    // Load views
+                    const { data: allRoutes, error: routesError } = await supabase
+                        .from('routes')
+                        .select('id, view_count');
+                    
+                    if (!routesError && allRoutes) {
+                        routeViews = {};
+                        allRoutes.forEach(route => {
+                            routeViews[route.id] = route.view_count || 0;
+                        });
+                        console.log('Loaded views from Supabase:', Object.keys(routeViews).length, 'routes');
+                    }
+                    
                     // Load comments
                     const { data: comments, error: commentsError } = await supabase
                         .from('route_comments')
@@ -3594,16 +4062,53 @@
                     });
                     
                     console.log('Loaded comments from Supabase:', comments.length, 'total comments');
+                    
+                    // Load view counts
+                    const { data: routesData, error: viewsError } = await supabase
+                        .from('routes')
+                        .select('id, view_count');
+                    
+                    if (!viewsError && routesData) {
+                        routeViews = {};
+                        routesData.forEach(route => {
+                            routeViews[route.id] = route.view_count || 0;
+                        });
+                        console.log('Loaded view counts from Supabase');
+                    }
                 } else {
                     // Load from localStorage
                     console.log('Loading likes and comments from localStorage (Supabase not configured)');
                     routeLikes = JSON.parse(localStorage.getItem('routeLikes')) || {};
                     routeComments = JSON.parse(localStorage.getItem('routeComments')) || {};
+                    routeViews = JSON.parse(localStorage.getItem('routeViews')) || {};
                 }
             } catch (error) {
                 console.error('Error loading likes and comments:', error);
                 routeLikes = JSON.parse(localStorage.getItem('routeLikes')) || {};
                 routeComments = JSON.parse(localStorage.getItem('routeComments')) || {};
+                routeViews = JSON.parse(localStorage.getItem('routeViews')) || {};
+            }
+        }
+        
+        // Increment Route View Count
+        async function incrementRouteView(routeId) {
+            try {
+                if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+                    const currentCount = routeViews[routeId] || 0;
+                    const { error } = await supabase
+                        .from('routes')
+                        .update({ view_count: currentCount })
+                        .eq('id', routeId);
+                    
+                    if (error) {
+                        console.error('Error updating view count:', error);
+                    }
+                } else {
+                    // Save to localStorage
+                    localStorage.setItem('routeViews', JSON.stringify(routeViews));
+                }
+            } catch (error) {
+                console.error('Error incrementing view count:', error);
             }
         }
         
@@ -3611,11 +4116,24 @@
         async function viewUserProfile(userId, userName) {
             if (!userId) return;
             
+            console.log('viewUserProfile called with:', { userId, userName });
+            
+            // Ensure routes are loaded from Supabase
+            if (routes.length === 0) {
+                await loadRoutesFromSupabase();
+            }
+            
             // Filter routes by user
             const userRoutes = routes.filter(r => r.user_id === userId);
+            console.log('User routes found:', userRoutes.length);
+            
+            // If no userName provided, try to get it from routes
+            if (!userName && userRoutes.length > 0) {
+                userName = userRoutes[0].user_name || 'User';
+            }
             
             // Show profile page
-            document.getElementById('userName').textContent = userName;
+            document.getElementById('userName').textContent = userName || 'User';
             document.getElementById('routeCount').textContent = `${userRoutes.length} route${userRoutes.length !== 1 ? 's' : ''} created`;
             document.getElementById('profileAvatar').textContent = userName.charAt(0).toUpperCase();
             
@@ -3624,6 +4142,10 @@
             const totalLikes = userRoutes.reduce((sum, r) => {
                 const likes = routeLikes[r.id] || [];
                 return sum + likes.length;
+            }, 0);
+            const totalViews = userRoutes.reduce((sum, r) => {
+                const views = routeViews[r.id] || 0;
+                return sum + views;
             }, 0);
             const totalDistance = userRoutes.reduce((sum, r) => {
                 if (r.waypoints.length < 2) return sum;
@@ -3639,6 +4161,7 @@
             document.getElementById('totalDistance').textContent = `${Math.round(totalDistance)} km`;
             document.getElementById('totalPhotos').textContent = totalPhotos;
             document.getElementById('totalLikes').textContent = totalLikes;
+            document.getElementById('totalViews').textContent = totalViews;
             
             const profileRoutes = document.getElementById('profileRoutes');
             const routeListSection = document.getElementById('routeListSection');
@@ -3695,7 +4218,17 @@
             }
             
             // Update followers/following count
+            // Set this BEFORE showPage to prevent it from being reset
             currentViewingUserId = userId;
+            
+            // Navigate to profile page - pass null to indicate programmatic call
+            showPage('profile', null);
+            
+            // Ensure likes and comments are loaded
+            if (Object.keys(routeLikes).length === 0 || Object.keys(routeComments).length === 0) {
+                await loadLikesAndComments();
+            }
+            
             await updateFollowersCount(userId);
             
             // Hide/show buttons for viewing own vs other user's profile
@@ -3711,6 +4244,7 @@
                 followBtn.style.display = 'none';
             } else if (currentUser) {
                 // Viewing another user's profile while logged in
+                console.log('Showing follow button for user:', userId);
                 document.getElementById('clearAllBtn').style.display = 'none';
                 document.getElementById('logoutBtn').style.display = 'none';
                 document.getElementById('loginBtn').style.display = 'none';
@@ -3718,15 +4252,24 @@
                 
                 // Check if already following
                 const isFollowing = follows[currentUser.id] && follows[currentUser.id].includes(userId);
-                followText.textContent = isFollowing ? 'Unfollow' : 'Follow';
-                followIcon.textContent = isFollowing ? '➖' : '➕';
+                console.log('Is following:', isFollowing);
                 
-                // Add/remove "following" class for visual state
+                // Update button state
                 if (isFollowing) {
+                    followText.textContent = 'Unfollow';
+                    followIcon.textContent = '➖';
                     followBtn.classList.add('following');
+                    // Forçar o estilo visual
+                    followBtn.style.background = 'var(--brutal-black)';
+                    followBtn.style.color = 'var(--brutal-white)';
                     console.log('Added "following" class. Classes:', followBtn.className);
                 } else {
+                    followText.textContent = 'Follow';
+                    followIcon.textContent = '➕';
                     followBtn.classList.remove('following');
+                    // Resetar para estilo padrão azul (primary)
+                    followBtn.style.background = 'var(--brutal-blue)';
+                    followBtn.style.color = 'var(--brutal-white)';
                     console.log('Removed "following" class. Classes:', followBtn.className);
                 }
             } else {
@@ -3739,12 +4282,12 @@
                 followText.textContent = 'Follow';
                 followIcon.textContent = '➕';
             }
-            
-            showPage('profile', document.querySelectorAll('.nav-btn')[2]);
         }
 
         // Follow/Unfollow System
         async function toggleFollow() {
+            console.log('toggleFollow called', { currentUser: currentUser?.id, currentViewingUserId });
+            
             if (!currentUser) {
                 // Save the user we want to follow for after login
                 if (currentViewingUserId) {
@@ -3756,12 +4299,37 @@
                 return;
             }
 
-            if (!currentViewingUserId) return;
+            if (!currentViewingUserId) {
+                console.error('No currentViewingUserId - você está no seu próprio perfil');
+                // Esconder o botão se ele estiver visível por erro
+                const followBtn = document.getElementById('followBtn');
+                if (followBtn) {
+                    followBtn.style.display = 'none';
+                }
+                return;
+            }
+            
+            // Prevenir follow de si mesmo
+            if (currentViewingUserId === currentUser.id) {
+                console.error('Cannot follow yourself');
+                const followBtn = document.getElementById('followBtn');
+                if (followBtn) {
+                    followBtn.style.display = 'none';
+                }
+                return;
+            }
 
             const followBtn = document.getElementById('followBtn');
             const followText = document.getElementById('followText');
             const followIcon = document.getElementById('followIcon');
-            const isFollowing = follows[currentUser.id] && follows[currentUser.id].includes(currentViewingUserId);
+            
+            // Verificar se está seguindo
+            if (!follows[currentUser.id]) {
+                follows[currentUser.id] = [];
+            }
+            const isFollowing = follows[currentUser.id].includes(currentViewingUserId);
+            
+            console.log('Current follow state:', { isFollowing, follows: follows[currentUser.id] });
 
             try {
                 if (isFollowing) {
@@ -3779,10 +4347,7 @@
 
                     // Update local state
                     follows[currentUser.id] = follows[currentUser.id].filter(id => id !== currentViewingUserId);
-                    
-                    followText.textContent = 'Follow';
-                    followIcon.textContent = '➕';
-                    followBtn.classList.remove('following');
+                    console.log('Unfollowed user');
                 } else {
                     // Follow
                     const { error } = await supabase
@@ -3800,13 +4365,13 @@
                     // Update local state
                     if (!follows[currentUser.id]) follows[currentUser.id] = [];
                     follows[currentUser.id].push(currentViewingUserId);
-                    
-                    followText.textContent = 'Unfollow';
-                    followIcon.textContent = '➖';
-                    followBtn.classList.add('following');
-                    console.log('Added "following" class. Button classes:', followBtn.className);
+                    console.log('Followed user');
                 }
 
+                // Update all follow buttons for this user (feed + profile)
+                const nowFollowing = !isFollowing;
+                updateFollowButtons(currentViewingUserId, nowFollowing);
+                
                 // Update followers count
                 await updateFollowersCount(currentViewingUserId);
             } catch (error) {
@@ -3827,7 +4392,10 @@
 
         // Quick follow/unfollow from feed
         async function quickFollow(userId, userName) {
+            console.log('quickFollow called:', { userId, userName, currentUser: currentUser?.id });
+            
             if (!currentUser) {
+                console.log('No currentUser, showing auth modal');
                 // Save for after login
                 localStorage.setItem('pendingFollowUserId', userId);
                 localStorage.setItem('pendingFollowUserName', userName);
@@ -3836,6 +4404,7 @@
             }
 
             const isFollowing = follows[currentUser.id] && follows[currentUser.id].includes(userId);
+            console.log('Current follow state:', { isFollowing, follows: follows[currentUser.id] });
             
             try {
                 if (isFollowing) {
@@ -3866,28 +4435,90 @@
                     follows[currentUser.id].push(userId);
                 }
 
-                // Refresh feed to update buttons
-                loadFeed();
+                console.log('Follow operation successful, new state:', { 
+                    isFollowing: !isFollowing,
+                    followsList: follows[currentUser.id] 
+                });
+                
+                // Update all follow buttons for this user
+                const nowFollowing = !isFollowing;
+                updateFollowButtons(userId, nowFollowing);
+                
+                // Update followers count if viewing this user's profile
+                if (currentViewingUserId === userId) {
+                    await updateFollowersCount(userId);
+                }
             } catch (error) {
                 console.error('Error quick following:', error);
-                if (error.code === 'PGRST204' || error.message.includes('schema cache')) {
+                console.error('Error details:', { code: error.code, message: error.message, details: error.details });
+                
+                if (error.code === 'PGRST204' || error.message?.includes('schema cache')) {
                     alert('The follows table was just created. Please:\n1. Go to Supabase Dashboard\n2. Click on "API" in the left menu\n3. Click "Reload schema cache" button\n4. Try again');
+                } else if (error.code === '42501' || error.message?.includes('permission denied')) {
+                    alert('Permission denied. Please check Row Level Security policies in Supabase for the follows table.');
                 } else {
                     alert('Failed to follow/unfollow: ' + (error.message || 'Unknown error'));
                 }
             }
         }
 
+        // Função para atualizar todos os botões de follow de um usuário específico
+        function updateFollowButtons(userId, isFollowing) {
+            console.log('Updating all follow buttons for user:', userId, 'isFollowing:', isFollowing);
+            
+            // Atualizar botão no feed
+            const feedBtn = document.getElementById(`follow-btn-${userId}`);
+            if (feedBtn) {
+                if (isFollowing) {
+                    feedBtn.classList.add('following');
+                    feedBtn.innerHTML = '✓ Following';
+                } else {
+                    feedBtn.classList.remove('following');
+                    feedBtn.innerHTML = '+ Follow';
+                }
+            }
+            
+            // Atualizar botão no perfil (se estiver vendo o perfil dessa pessoa)
+            if (currentViewingUserId === userId) {
+                const profileBtn = document.getElementById('followBtn');
+                const followText = document.getElementById('followText');
+                const followIcon = document.getElementById('followIcon');
+                
+                if (profileBtn && followText && followIcon) {
+                    // Garantir que o botão está visível
+                    profileBtn.style.display = 'inline-flex';
+                    
+                    if (isFollowing) {
+                        followText.textContent = 'Unfollow';
+                        followIcon.textContent = '➖';
+                        profileBtn.classList.add('following');
+                        profileBtn.style.background = 'var(--brutal-black)';
+                        profileBtn.style.color = 'var(--brutal-white)';
+                    } else {
+                        followText.textContent = 'Follow';
+                        followIcon.textContent = '➕';
+                        profileBtn.classList.remove('following');
+                        profileBtn.style.background = 'var(--brutal-blue)';
+                        profileBtn.style.color = 'var(--brutal-white)';
+                    }
+                    
+                    console.log('Profile button updated:', { isFollowing, display: profileBtn.style.display, text: followText.textContent });
+                }
+            }
+        }
+
         async function loadFollows() {
             try {
+                console.log('Loading follows from Supabase...');
                 const { data, error } = await supabase
                     .from('follows')
                     .select('*');
 
                 if (error) {
+                    console.error('Error loading follows:', error);
                     // If table doesn't exist, just initialize empty follows
                     if (error.message && error.message.includes('does not exist')) {
-                        console.warn('Follows table not found. Run create_follows_table.sql to enable followers feature.');
+                        console.warn('⚠️ Follows table not found. Run database_setup.sql to enable followers feature.');
                         follows = {};
                         return;
                     }
@@ -3904,6 +4535,8 @@
                         follows[follow.follower_id].push(follow.following_id);
                     });
                 }
+                
+                console.log(`✅ Loaded ${data?.length || 0} follow relationships`);
 
                 console.log('Loaded follows:', follows);
             } catch (error) {

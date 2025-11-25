@@ -1,4 +1,4 @@
--- SPYN Database Setup
+-- STPZ Database Setup
 -- Execute this SQL in your Supabase SQL Editor
 
 -- ============================================
@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS routes (
   waypoints JSONB NOT NULL,
   created TIMESTAMPTZ DEFAULT NOW(),
   photo_count INTEGER,
+  view_count INTEGER DEFAULT 0,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   user_name TEXT
 );
@@ -247,7 +248,7 @@ GRANT SELECT ON route_feed TO authenticated;
 GRANT SELECT ON route_feed TO anon;
 
 -- ============================================
--- DONE! Your database is ready for SPYN
+-- DONE! Your database is ready for STPZ
 -- ============================================
 
 -- Test the setup with:
